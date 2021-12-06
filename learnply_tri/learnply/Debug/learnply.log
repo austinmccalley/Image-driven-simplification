@@ -1,0 +1,15 @@
+﻿  learnply.cpp
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(91,20): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(313,19): error C2082: redefinition of formal parameter 'b'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(411,2): error C2059: syntax error: '}'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(363,2): error C2360: initialization of 'current' is skipped by 'case' label
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(331): message : see declaration of 'current'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(519,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(526,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(528,4): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(551,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(552,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(584,26): warning C4305: '=': truncation from 'double' to 'GLfloat'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(640,16): warning C4018: '<': signed/unsigned mismatch
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(752,16): warning C4018: '<': signed/unsigned mismatch
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(786,16): warning C4018: '<': signed/unsigned mismatch
