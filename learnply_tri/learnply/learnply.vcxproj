@@ -130,6 +130,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
     </ClCompile>
+    <ClCompile Include="List.cpp" />
     <ClCompile Include="ply.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -151,6 +152,7 @@
     <ClInclude Include="icMatrix.H" />
     <ClInclude Include="icVector.H" />
     <ClInclude Include="learnply_io.h" />
+    <ClInclude Include="List.h" />
     <ClInclude Include="ply.h" />
     <ClInclude Include="polyhedron.h" />
     <ClInclude Include="tmatrix.h" />

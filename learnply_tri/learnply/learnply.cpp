@@ -10,6 +10,7 @@ Eugene Zhang, 2005
 #include <math.h>
 #include <string.h>
 #include <fstream>
+#include <vector>
 
 #include "glut.h"
 #include "ply.h"
@@ -143,13 +144,13 @@ void initMatrix3x3(icMatrix3x3 M)
 			M.set(i, j, 0.0);
 }
 
-void initMatrix(Matrix M)
+void initMatrix(icMatrix3x3 *M)
 {
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			M[i][j] = 0.0;
+			M->entry[i][j] = 0.0;
 		}
 	}
 }
@@ -173,6 +174,30 @@ double *normalToTriangle(double **verts)
 	res[0] = x;
 	res[1] = y;
 	res[2] = z;
+
+	return res;
+}
+
+icVector3 *normalToTriangle(icMatrix3x3 *M)
+{
+	double x = 0, y = 0, z = 0;
+
+	icVector3 *res = new icVector3();
+
+	for (int j = 0; j < 2; j++)
+	{
+		x = x + (M->entry[j][1] - M->entry[j + 1][1]) * (M->entry[j][2] + M->entry[j + 1][2]);
+		y = y + (M->entry[j][2] - M->entry[j + 1][2]) * (M->entry[j][0] + M->entry[j + 1][0]);
+		z = z + (M->entry[j][0] - M->entry[j + 1][0]) * (M->entry[j][1] + M->entry[j + 1][1]);
+	}
+
+	x = x + (M->entry[2][1] - M->entry[0][1]) * (M->entry[2][2] + M->entry[0][2]);
+	y = y + (M->entry[2][2] - M->entry[0][2]) * (M->entry[2][0] + M->entry[0][0]);
+	z = z + (M->entry[2][0] - M->entry[0][0]) * (M->entry[2][1] + M->entry[0][1]);
+
+	res->x = x;
+	res->y = y;
+	res->z = z;
 
 	return res;
 }
@@ -205,7 +230,7 @@ double det3x3(double **A)
 	return res;
 }
 
-void sumTriangle(double *newC, double *t, Triangle *t_i)
+void sumTriangle(icVector3 *newC, double *t, Triangle *t_i)
 {
 	double a[3], b[3], c[3];
 
@@ -240,6 +265,7 @@ void sumTriangle(double *newC, double *t, Triangle *t_i)
 	b[2] = v1_z;
 
 	c[0] = v2_x;
+
 	c[1] = v2_y;
 	c[2] = v2_z;
 
@@ -283,9 +309,10 @@ void sumTriangle(double *newC, double *t, Triangle *t_i)
 	}
 
 	double d = -1 * dotProduct(normal, fp, 3);
-	newC[0] += a1;
-	newC[1] += b1;
-	newC[2] += c1;
+
+	newC->entry[0] += a1;
+	newC->entry[0] += b1;
+	newC->entry[0] += c1;
 
 	double **transposed = transpose(M, 3, 3);
 	*t = *t - det3x3(transposed);
@@ -299,12 +326,14 @@ double norm(double *a, int d)
 	return sqrt(res);
 }
 
-double cosTwoVecs(double* a, double* b, int n){
+double cosTwoVecs(double *a, double *b, int n)
+{
 	return (dotProduct(a, b, n) / (norm(a, n) * norm(b, n)));
 }
 
-double* crossProduct(double* a, double* b, int d){
-	double* res = new double[d];
+double *crossProduct(double *a, double *b, int d)
+{
+	double *res = new double[d];
 	for (int i = 0; i < d; i++)
 	{
 		res[i] = a[(i + 1) % d] * b[(i + 2) % d] - a[(i + 2) % d] * b[(i + 1) % d];
@@ -312,73 +341,86 @@ double* crossProduct(double* a, double* b, int d){
 	return res;
 }
 
-double sinTwoVecs(double* a, double* b, int n){
-	double* c = crossProduct(a, b, n);
+double sinTwoVecs(double *a, double *b, int n)
+{
+	double *c = crossProduct(a, b, n);
 	return norm(c, n) / (norm(a, n) * norm(b, n));
 }
 
-int checkConstraints(icMatrix3x3* A_c, icVector3* b_c, int n){
+int checkConstraints(icMatrix3x3 *A_c, icVector3 *b_c, int n)
+{
 	double a1[3], a2[3], a3[3];
 	double left, right, **matrix;
 
 	switch (n)
 	{
-		case 1:
-			if(A_c->entry[0][0] <= 0.000001 && A_c->entry[0][1] <= 0.000001 && A_c->entry[0][2] <= 0.000001){
-				return 0;
-			}
-			return 1;
-			break;
-		case 2:
-			a1[0] = A_c->entry[0][0];
-			a1[1] = A_c->entry[0][1];
-			a1[2] = A_c->entry[0][2];
+	case 1:
+	{
+		if (A_c->entry[0][0] <= 0.000001 && A_c->entry[0][1] <= 0.000001 && A_c->entry[0][2] <= 0.000001)
+		{
+			return 0;
+		}
+		return 1;
+		break;
+	}
+	case 2:
+	{
+		a1[0] = A_c->entry[0][0];
+		a1[1] = A_c->entry[0][1];
+		a1[2] = A_c->entry[0][2];
 
-			a2[0] = A_c->entry[1][0];
-			a2[1] = A_c->entry[1][1];
-			a2[2] = A_c->entry[1][2];
+		a2[0] = A_c->entry[1][0];
+		a2[1] = A_c->entry[1][1];
+		a2[2] = A_c->entry[1][2];
 
-			double cos = cosTwoVecs(a1, a2, 3);
-			return cos * cos < 0.97;
-			break;
-		case 3:
-			a1[0] = A_c->entry[0][0];
-			a1[1] = A_c->entry[0][1];
-			a1[2] = A_c->entry[0][2];
+		double cos = cosTwoVecs(a1, a2, 3);
+		return cos * cos < 0.97;
+		break;
+	}
+	case 3:
+	{
+		a1[0] = A_c->entry[0][0];
+		a1[1] = A_c->entry[0][1];
+		a1[2] = A_c->entry[0][2];
 
-			a2[0] = A_c->entry[1][0];
-			a2[1] = A_c->entry[1][1];
-			a2[2] = A_c->entry[1][2];
+		a2[0] = A_c->entry[1][0];
+		a2[1] = A_c->entry[1][1];
+		a2[2] = A_c->entry[1][2];
 
-			a3[0] = A_c->entry[2][0];
-			a3[1] = A_c->entry[2][1];
-			a3[2] = A_c->entry[2][2];
+		a3[0] = A_c->entry[2][0];
+		a3[1] = A_c->entry[2][1];
+		a3[2] = A_c->entry[2][2];
 
-			double* cp = crossProduct(a1, a2, 3);
+		double *cp = crossProduct(a1, a2, 3);
 
-			left = dotProduct(cp, a3, 3);
-			left = left * left;
+		left = dotProduct(cp, a3, 3);
+		left = left * left;
 
-			right = norm(cp, 3) * norm(a3, 3) * sinTwoVecs(cp, a3, 3);
-			right = right * right;
+		right = norm(cp, 3) * norm(a3, 3) * sinTwoVecs(cp, a3, 3);
+		right = right * right;
 
-			return left > right;
-			break;
+		return left > right;
+		break;
+	}
 	}
 	return 0;
 }
 
-int addConstraintIfIndep(icMatrix3x3 *A_c, icVector3 *b_c, int n, double* newC,  double b){
+int addConstraintIfIndep(icMatrix3x3 *A_c, icVector3 *b_c, int n, icVector3 *newC, double b)
+{
 	for (int i = 0; i < 3; i++)
 	{
-		A_c->entry[n][i] = newC[i];
+		A_c->entry[n][i] = newC->entry[i];
 	}
 
 	b_c[n] = b;
 
-	if(checkConstraints(A_c, b_c, n+1)){
+	if (checkConstraints(A_c, b_c, n + 1))
+	{
 		n++;
-	} else {
+	}
+	else
+	{
 		for (int i = 0; i < 3; i++)
 		{
 			A_c->entry[n][i] = 0;
@@ -388,28 +430,19 @@ int addConstraintIfIndep(icMatrix3x3 *A_c, icVector3 *b_c, int n, double* newC, 
 	return n;
 }
 
-int isBoundaryEdge(Edge *e){
-	
-	int v1_i = e->verts[0]->index;
-	int v2_i = e->verts[1]->index;
-
-	Vertex *v1 = poly->vlist[v1_i];
-	Vertex *v2 = poly->vlist[v2_i];
-
-	v1->
+int isBoundaryEdge(Edge *e)
+{
+	return poly->getBoundingEdges(e) == 1;
 }
 
-int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, Matrix *H1, Matrix *H2, int n_constraints, int edge)
+int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2, int n_constraints, int edge)
 {
-	icVector3 *a1, *b1;
-	double *newC = new double[3];
+	icVector3 *a1, *b1, *newC;
+
 	double *t = (double *)malloc(sizeof(double));
 
 	/* Set newC[i] = 0 */
-	for (int i = 0; i < 3; i++)
-	{
-		newC[i] = 0.0;
-	}
+	newC = new icVector3(0, 0, 0);
 
 	/* Set t to 0 */
 	*t = 0.0;
@@ -420,10 +453,15 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, Matrix *H1, Matrix *H2, 
 
 	double a[3], b[3], c[3];
 
-	double *e1, *e2, *e3;
-	e1 = (double *) malloc(sizeof(double) * 3);
-	e2 = (double *) malloc(sizeof(double) * 3);
-	e3 = (double *) malloc(sizeof(double) * 3);
+	icVector3 *e1 = new icVector3();
+	icVector3 *e2 = new icVector3();
+	icVector3 *e3 = new icVector3();
+
+	icVector3 *v1_e1 = new icVector3();
+	icVector3 *v2_e1 = new icVector3();
+
+	/* Counter */
+	int counter = 0;
 
 	/* Create two linked lists */
 	LinkedList *list1 = new LinkedList();
@@ -432,55 +470,71 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, Matrix *H1, Matrix *H2, 
 	createList(list1);
 	createList(list2);
 
+	/* Current edge */
+	Edge *currE;
+
+	/* Cross product */
+	icVector3 *cp = new icVector3();
+
 	switch (n_constraints)
 	{
-	case 0: // Constraint volume
-		// Set the first element of a linked list, l1, to be v1
-		addToList(list1, v1);
-		// Set the first element of a linked list, l2, to be v2
-		addToList(list2, v2);
+	case 0:
+	{ // Constraint volume
 
 		// Set the current node to be l1
 		Node *current = list1->head;
 
-		/* 
+		/*
 				While current is not null
 					- Get the value of some triangle ?
 					- Set current to current->next
 					- Sum triangle components
 			 */
-		while (current != NULL)
-		{
-			Triangle *t_i = (Triangle *)current->value;
-			current = current->next;
+
+		std::vector<int> triangles;
+
+		for (int i = 0; i < v1->ntris; i++){
+			Triangle *t_i = v1->tris[i];
+
+			triangles.push_back(t_i->index);
 			sumTriangle(newC, t, t_i);
 		}
 
-		// Set the current node to be l2
-		current = list2->head;
-
-		/* 
+		/*
 				While current is not null
 					If l1 does not contain current
 						- Get the value of some triangle ?
 						- Sum triangle components
 					- Set current to current->next
 			 */
-		while (current != NULL) {
-			if(containsVal(list1, current->value) == 0) {
-				Triangle *t_i = (Triangle *)current->value;
-				current = current->next;
+
+		for (int i = 0; i < v2->ntris; i++){
+			if(std::find(triangles.begin(), triangles.end(), v2->tris[i]->index) == triangles.end()){
+				Triangle *t_i = v2->tris[i];
+
+				triangles.push_back(t_i->index);
 				sumTriangle(newC, t, t_i);
 			}
-			else {
-				current = current->next;
-			}
 		}
+
+			while (current != NULL)
+			{
+				if (containsVal(list1, current->value) == 0)
+				{
+					Triangle *t_i = (Triangle *)current->value;
+					current = current->next;
+					sumTriangle(newC, t, t_i);
+				}
+				else
+				{
+					current = current->next;
+				}
+			}
 
 		// For each element in newC, set it to be 1/6 of its value
 		for (int i = 0; i < 3; i++)
 		{
-			newC[i] = newC[i] / 6.0;
+			newC->entry[i] /= 6.0;
 		}
 
 		// Set t to be equal to 1/6 of its current value
@@ -490,17 +544,16 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, Matrix *H1, Matrix *H2, 
 
 		n_constraints = addConstraintIfIndep(A_c, b_c, n_constraints, newC, *t);
 
+		std::cout << "n_constraints: " << n_constraints << std::endl;
 		// Set t to 0
 		*t = 0.0;
-
-	case 1: // Boundary preservation
-			// Initialize e1[i] = e2[i] = e3[i] = 0
-		for (int i = 0; i < 3; i++)
-		{
-			e1[i] = 0.0;
-			e2[i] = 0.0;
-			e3[i] = 0.0;
-		}
+	}
+	case 1:
+	{ // Boundary preservation
+		// Initialize e1[i] = e2[i] = e3[i] = 0
+		e1->entry[0] = 0.0;
+		e1->entry[1] = 0.0;
+		e1->entry[2] = 0.0;
 
 		// l1 = v1->edge
 		destroyList(list1);
@@ -517,7 +570,7 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, Matrix *H1, Matrix *H2, 
 		Edge *e2_i = poly->elist[v2_i];
 		addToList(list2, e2_i);
 
-		/* 
+		/*
 				While l2 is not NULL
 					- If isBoundaryEdge && l2->value != current edge
 						- counter ++
@@ -531,14 +584,37 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, Matrix *H1, Matrix *H2, 
 							- Set e2[i] to e2[i] + cross_product[i]
 					- Set l2 to l2->next
 			 */
-		while (list2->head != NULL) {
+		while (list2->head != NULL)
+		{
+			if (isBoundaryEdge((Edge *)list2->head->value) && list2->head->value != poly->elist[edge])
+			{
+				counter++;
 
+				currE = (Edge *)list2->head->value;
+
+				v1_e1->x = v1->x;
+				v1_e1->y = v1->y;
+				v1_e1->z = v1->z;
+
+				v2_e1->x = v2->x;
+				v2_e1->y = v2->y;
+				v2_e1->z = v2->z;
+
+				e1->operator-=(*v2_e1);
+				e1->operator+=(*v1_e1);
+
+				cp = cross(v2_e1, v1_e1);
+
+				e1->operator+=(*cp);
+			}
+			list2->head = list2->head->next;
 		}
-		/* 
+
+		/*
 				While l1 is not NULL
 					- If isBoundaryEdge && l1->value != current edge
 						- counter ++
-						- Set current edge to l2->value
+						- Set current edge to l1->value
 						- Set v1_e1 to v1
 						- Set v2_e1 to v2
 						- For i to 3
@@ -548,6 +624,31 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, Matrix *H1, Matrix *H2, 
 							- Set e2[i] to e2[i] + cross_product[i]
 					- Set l1 to l1->next
 			 */
+		while (list1->head != NULL)
+		{
+			if (isBoundaryEdge((Edge *)list1->head->value) && list1->head->value != poly->elist[edge])
+			{
+				counter++;
+
+				currE = (Edge *)list1->head->value;
+
+				v1_e1->x = v1->x;
+				v1_e1->y = v1->y;
+				v1_e1->z = v1->z;
+
+				v2_e1->x = v2->x;
+				v2_e1->y = v2->y;
+				v2_e1->z = v2->z;
+
+				e2->operator+=(*v2_e1);
+				e2->operator-=(*v1_e1);
+
+				cp = cross(v2_e1, v1_e1);
+
+				e2->operator+=(*cp);
+			}
+			list1->head = list1->head->next;
+		}
 
 		// If counter > 0
 		// Set v1_e1 to v1
@@ -562,7 +663,198 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, Matrix *H1, Matrix *H2, 
 		// Get newly accepted constraints if independent
 		// newC = crossProduct of e1 e3
 		// n_constraints updated
+
+		if (counter > 0)
+		{
+			v1_e1->x = v1->x;
+			v1_e1->y = v1->y;
+			v1_e1->z = v1->z;
+
+			v2_e1->x = v2->x;
+			v2_e1->y = v2->y;
+			v2_e1->z = v2->z;
+
+			e1->operator+=(*v2_e1);
+			e1->operator-=(*v1_e1);
+
+			cp = cross(v2_e1, v1_e1);
+
+			e1->operator+=(*cp);
+
+			e3 = cross(e1, e2);
+
+			newC = scalarVector(dot(e1, e1), e3);
+
+			n_constraints = addConstraintIfIndep(A_c, b_c, n_constraints, newC, *t);
+		}
 	}
+	case 2:
+	{
+		// Volume Optimization
+
+		// Set list1 to be the triangles of the vector v1
+		destroyList(list1);
+		createList(list1);
+
+		for (int i = 0; i < v1->ntris; i++)
+		{
+			addToList(list1, v1->tris[i]);
+		}
+
+		// Set list2 to be the triangles of the vector v2
+		destroyList(list2);
+		createList(list2);
+
+		for (int i = 0; i < v2->ntris; i++)
+		{
+			addToList(list2, v2->tris[i]);
+		}
+
+		// Set current = to list1
+		Node *curr = list1->head;
+
+		// Make a matrix called verts thats 3x3
+		icMatrix3x3 *verts = new icMatrix3x3(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+		// Make a matrix H that is 4x4
+		double **H = new double *[4];
+
+		for (int i = 0; i < 4; i++)
+		{
+			H[i] = new double[4];
+			for (int j = 0; j < 4; j++)
+			{
+				H[i][j] = 0;
+			}
+		}
+
+		// Set k = 0;
+		int k = 0;
+
+		// Set a shadow counter to 0
+		int shadowCounter = 0;
+
+		// Set the doubles a,b,c,d
+		double a, b, c, d;
+
+		// Make a matrix called transposed
+		icMatrix3x3 *transposed = new icMatrix3x3(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+		// Make a vector called firstPoint of size 3
+		icVector3 *firstPoint = new icVector3(0, 0, 0);
+
+		// Initialize some triangle t_i
+		Triangle *t_i;
+
+		/* 
+			While current is not null
+				- Set t_i to the current triangle
+				- Set current to current->next
+				- Set verts to be the matrix of t_i->v1,v2,v3
+				- Find normal to triangle
+				- Set a to be the x of the normal
+				- Set b to be the y of the normal
+				- Set c to be the z of the normal
+				- Tranpose is verts transposed
+				- d is the negative determinant of verts
+		 		- From i..3,
+				 	- fp[i] = verts[0][i]
+				- Set H to be a,b,c,d ^2
+		 */
+
+		
+
+		while (curr != NULL)
+		{
+			t_i = (Triangle *)curr->value;
+
+			curr = curr->next;
+
+			icVector3 *v1_t_i = new icVector3(t_i->verts[0]->x, t_i->verts[0]->y, t_i->verts[0]->z);
+			icVector3 *v2_t_i = new icVector3(t_i->verts[1]->x, t_i->verts[1]->y, t_i->verts[1]->z);
+			icVector3 *v3_t_i = new icVector3(t_i->verts[2]->x, t_i->verts[2]->y, t_i->verts[2]->z);
+
+			verts = new icMatrix3x3(v1_t_i, v2_t_i, v3_t_i);
+
+			icVector3 *normal = normalToTriangle(verts);
+
+			a = normal->x;
+			b = normal->y;
+			c = normal->z;
+
+			transposed = &transpose(verts);
+
+			d = -1 * determinant(*transposed);
+
+			firstPoint->x = verts->entry[0][0];
+			firstPoint->y = verts->entry[0][1];
+			firstPoint->z = verts->entry[0][2];
+
+			H[0][0] += a * a;
+			H[0][1] += a * b;
+			H[0][2] += a * c;
+			H[0][3] += a * d;
+
+			H[1][0] += b * a;
+			H[1][1] += b * b;
+			H[1][2] += b * c;
+			H[1][3] += b * d;
+
+			H[2][0] += c * a;
+			H[2][1] += c * b;
+			H[2][2] += c * c;
+			H[2][3] += c * d;
+
+			H[3][0] += d * a;
+			H[3][1] += d * b;
+			H[3][2] += d * c;
+			H[3][3] += d * d;
+		}
+	}
+
+		return 0;
+	}
+}
+
+void calculateSolutions(int n)
+{
+	icMatrix3x3 *A_c = new icMatrix3x3(0.0);
+	icVector3 *b_c = new icVector3(0.0, 0.0, 0.0);
+
+	double **fv1_H = new double *[4];
+	for (int i = 0; i < 4; i++)
+	{
+		fv1_H[i] = new double[4];
+		for (int j = 0; j < 4; j++)
+		{
+			fv1_H[i][j] = 0;
+		}
+	}
+
+	double **fv2_H = new double *[4];
+	for (int i = 0; i < 4; i++)
+	{
+		fv2_H[i] = new double[4];
+		for (int j = 0; j < 4; j++)
+		{
+			fv2_H[i][j] = 0;
+		}
+	}
+
+	icVector3 *sol = new icVector3(0.0, 0.0, 0.0);
+	icVector3 *vv1 = new icVector3(0.0, 0.0, 0.0);
+	icVector3 *vv2 = new icVector3(0.0, 0.0, 0.0);
+
+	double cv;
+
+	icMatrix3x3 *currA = new icMatrix3x3(0.0);
+	icVector3 *currB = new icVector3(0.0, 0.0, 0.0);
+
+	int counter = 0;
+
+	int n_constr = getAllConstraints(A_c, b_c, fv1_H, fv2_H, 0, n);
+
+	/* Get all contrains given some poly p, our constraints A and b, H1, H2, 0, n */
 }
 
 /******************************************************************************
@@ -604,22 +896,8 @@ void keyboard(unsigned char key, int x, int y)
 	case '4':
 		display_mode = 4;
 		{
-
-			icMatrix3x3 *A = new icMatrix3x3;
-			icVector3 *b = new icVector3(0.0, 0.0, 0.0);
-
-			Matrix *H1;
-			Matrix *H2;
-			icVector3 *c = new icVector3(0.0, 0.0, 0.0);
-			double k = 0;
-
-			initMatrix3x3(*A);
-			initMatrix(*H1);
-			initMatrix(*H2);
-
-			double solution, vv1, vv2, cv;
-
-			/* Get all contrains given some poly p, our constraints A and b, H1, H2, 0, n */
+			for (int i = 0; i < poly->nedges; i++)
+				calculateSolutions(i);
 		}
 
 		display();

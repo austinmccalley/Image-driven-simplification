@@ -9,6 +9,7 @@ The polygon data structure
 
 #include <math.h>
 #include <fstream>
+#include <iostream>
 #include "ply.h"
 #include "icVector.H"
 #include "icMatrix.H"
@@ -700,4 +701,30 @@ void Polyhedron::average_normals()
             vlist[i]->normal += vlist[i]->tris[j]->normal;
         normalize(vlist[i]->normal);
     }
+}
+
+int Polyhedron::getBoundingEdges(Edge* e){
+    // Given an edge, find the other two edges that are on the same face
+    // and return them in the order they are in the face
+
+    Vertex *v1 = e->verts[0];
+    Vertex *v2 = e->verts[1];
+
+    int count = 0;
+
+    for (int i = 0; i < v1->ntris; i++){
+        Triangle *t = v1->tris[i];
+        for (int j = 0; j < 3; j++){
+            if (t->edges[j] == e){
+                if (t->edges[(j+1)%3]->verts[0] == v2){
+                    count++;
+                }
+                else if (t->edges[(j+2)%3]->verts[0] == v2){
+                    count++;
+                }
+            }
+        }
+    }
+
+    return count;
 }

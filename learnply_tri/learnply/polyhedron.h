@@ -213,6 +213,7 @@ public:
 	void calc_bounding_sphere();
 	void calc_face_normals_and_area();
 	void calc_edge_length();
+	int getBoundingEdges(Edge*);
 
 	Polyhedron();
 	Polyhedron(FILE*);

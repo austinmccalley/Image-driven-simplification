@@ -317,6 +317,7 @@ public:
   inline icMatrix3x3(double x);
   inline icMatrix3x3(const icMatrix3x3 &that);
 	inline icMatrix3x3(const icVector3 &v1, const icVector3 &v2, const icVector3 &v3);
+	inline icMatrix3x3(const icVector3 *v1, const icVector3 *v2, const icVector3 *v3);
 
   inline icMatrix3x3(double M00, double M01, double M02,
 										 double M10, double M11, double M12,
@@ -380,7 +381,9 @@ inline icVector3   operator*(const icVector3   &a, const icMatrix3x3 &b);
 inline double determinant(const icMatrix3x3 &a);
 
 inline icMatrix3x3 transpose(const icMatrix3x3 &a);
-inline icMatrix3x3   inverse(const icMatrix3x3 &a);
+inline icMatrix3x3 transpose(const icMatrix3x3 *a);
+inline icMatrix3x3 inverse(const icMatrix3x3 &a);
+inline icMatrix3x3 inverse(const icMatrix3x3 *a);
 
 inline icMatrix3x3::icMatrix3x3() {
   entry[0][0] = 1;
@@ -442,6 +445,18 @@ inline icMatrix3x3::icMatrix3x3(const icVector3 &v1, const icVector3 &v2, const 
 	entry[2][0] = v3.entry[0];
 	entry[2][1] = v3.entry[1];
 	entry[2][2] = v3.entry[2];
+}
+
+inline icMatrix3x3::icMatrix3x3(const icVector3 *v1, const icVector3* v2, const icVector3* v3){
+  entry[0][0] = v1->entry[0];
+  entry[0][1] = v1->entry[1];
+  entry[0][2] = v1->entry[2];
+  entry[1][0] = v2->entry[0];
+  entry[1][1] = v2->entry[1];
+  entry[1][2] = v2->entry[2];
+  entry[2][0] = v3->entry[0];
+  entry[2][1] = v3->entry[1];
+  entry[2][2] = v3->entry[2];
 }
 
 inline icMatrix3x3 &icMatrix3x3::set(const double d) {
@@ -732,6 +747,21 @@ inline icMatrix3x3 transpose(const icMatrix3x3 &a) {
   return tmp;
 }
 
+inline icMatrix3x3 transpose(const icMatrix3x3 *a){
+  icMatrix3x3* tmp = new icMatrix3x3(*a);
+
+  tmp->entry[0][1] = a->entry[1][0];
+  tmp->entry[1][0] = a->entry[0][1];
+
+  tmp->entry[0][2] = a->entry[2][0];
+  tmp->entry[2][0] = a->entry[0][2];
+
+  tmp->entry[2][1] = a->entry[1][2];
+  tmp->entry[1][2] = a->entry[2][1];
+
+  return *tmp;
+}
+
 inline icMatrix3x3 inverse(const icMatrix3x3 &a) {
 	icMatrix3x3 tmp;
 	double dmt;
@@ -750,6 +780,26 @@ inline icMatrix3x3 inverse(const icMatrix3x3 &a) {
 		tmp.entry[2][2] = (a.entry[0][0] * a.entry[1][1] - a.entry[1][0] * a.entry[0][1])/dmt;
 	}
 	return tmp;
+}
+
+inline icMatrix3x3 inverse(const icMatrix3x3 *a) {
+  icMatrix3x3 tmp;
+  double dmt;
+
+  if((dmt=determinant(*a)) != 0.0){
+    tmp.entry[0][0] = (a->entry[1][1] * a->entry[2][2] - a->entry[2][1] * a->entry[1][2])/dmt;
+    tmp.entry[0][1] = (a->entry[2][1] * a->entry[0][2] - a->entry[0][1] * a->entry[2][2])/dmt;
+    tmp.entry[0][2] = (a->entry[0][1] * a->entry[1][2] - a->entry[1][1] * a->entry[0][2])/dmt;
+
+    tmp.entry[1][0] = (a->entry[1][2] * a->entry[2][0] - a->entry[2][2] * a->entry[1][0])/dmt;
+    tmp.entry[1][1] = (a->entry[2][2] * a->entry[0][0] - a->entry[0][2] * a->entry[2][0])/dmt;
+    tmp.entry[1][2] = (a->entry[0][2] * a->entry[1][0] - a->entry[1][2] * a->entry[0][0])/dmt;
+
+    tmp.entry[2][0] = (a->entry[1][0] * a->entry[2][1] - a->entry[2][0] * a->entry[1][1])/dmt;
+    tmp.entry[2][1] = (a->entry[2][0] * a->entry[0][1] - a->entry[0][0] * a->entry[2][1])/dmt;
+    tmp.entry[2][2] = (a->entry[0][0] * a->entry[1][1] - a->entry[1][0] * a->entry[0][1])/dmt;
+  }
+  return tmp;
 }
 
 #endif
