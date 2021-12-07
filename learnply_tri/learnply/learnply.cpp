@@ -435,6 +435,143 @@ int isBoundaryEdge(Edge *e)
 	return poly->getBoundingEdges(e) == 1;
 }
 
+double *orthogonalVtoV(icVector3 *a)
+{
+	icVector3 *res = new icVector3();
+
+	if (fabs(a->entry[2]) >= 0.00001)
+	{
+		res->entry[0] = 1;
+		res->entry[1] = 1;
+		res->entry[2] = (-a->entry[0] - a->entry[1]) / a->entry[2];
+	}
+	else if (fabs(a->entry[1]) >= 0.00001)
+	{
+		res->entry[0] = 1;
+		res->entry[1] = (-a->entry[0] - a->entry[2]) / a->entry[1];
+		res->entry[2] = 1;
+	}
+	else if (fabs(a->entry[0]) >= 0.00001)
+	{
+		res->entry[0] = (-a->entry[1] - a->entry[2]) / a->entry[0];
+		res->entry[1] = 1;
+		res->entry[2] = 1;
+	}
+	else
+	{
+		res->entry[0] = 1;
+		res->entry[1] = 1;
+		res->entry[2] = 1;
+	}
+
+	res->entry[0] *= 10000;
+	res->entry[1] *= 10000;
+	res->entry[2] *= 10000;
+
+	double *d_res = new double[3];
+	d_res[0] = res->entry[0];
+	d_res[1] = res->entry[1];
+	d_res[2] = res->entry[2];
+
+	return d_res;
+}
+
+double *orthogonalVto2V(icVector3 *a, double *b)
+{
+	icVector3 *b_vec = new icVector3(b[0], b[1], b[2]);
+
+	icVector3 *res = cross(a, b_vec);
+
+	for (int i = 0; i < 3; i++)
+	{
+		res->entry[i] *= 10000;
+	}
+
+	double *d_res = new double[3];
+	d_res[0] = res->entry[0];
+	d_res[1] = res->entry[1];
+	d_res[2] = res->entry[2];
+
+	return d_res;
+}
+
+int quadraticOpt(icMatrix3x3 *A_c, icVector3 *b_c, int n, double **A)
+{
+	double **Q = new double *[3 - n];
+	for (int i = 0; i < 3 - n; i++)
+	{
+		Q[i] = new double[3];
+	}
+
+	if (n == 0)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			Q[i][i] = 100000.0;
+		}
+	}
+
+	icVector3 *curr = new icVector3();
+
+	curr->entry[0] = A_c->entry[0][0];
+	curr->entry[1] = A_c->entry[0][1];
+	curr->entry[2] = A_c->entry[0][2];
+
+	double mult = 10000000.0;
+
+	if (n == 1)
+	{
+		free(Q[0]);
+		free(Q[1]);
+		Q[0] = orthogonalVtoV(curr);
+		Q[1] = orthogonalVto2V(curr, Q[0]);
+
+		for (int i = 0; i < 3; i++)
+			Q[0][i] *= mult;
+		for (int i = 0; i < 3; i++)
+			Q[1][i] *= mult;
+	}
+
+	if (n == 2)
+	{
+		icVector3 *curr2 = new icVector3();
+		for (int i = 0; i < 3; i++)
+		{
+			curr->entry[i] = A[0][i];
+			curr2->entry[i] = A[1][i];
+		}
+		free(Q[0]);
+
+		double *tmp = new double[3];
+		tmp[0] = curr2->entry[0];
+		tmp[1] = curr2->entry[1];
+		tmp[2] = curr2->entry[2];
+
+		Q[0] = orthogonalVto2V(curr, tmp);
+
+		for (int i = 0; i < 3; i++)
+			Q[0][i] *= mult;
+
+		free(curr2);
+	}
+
+	icMatrix3x3 *A_red = new icMatrix3x3();
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			A_red->entry[i][j] = A[i][j];
+		}
+	}
+
+	icVector3 *b_tmp = new icVector3();
+	b_tmp->entry[0] = A[0][3];
+	b_tmp->entry[1] = A[1][3];
+	b_tmp->entry[2] = A[2][3];
+
+
+}
+
 int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2, int n_constraints, int edge)
 {
 	icVector3 *a1, *b1, *newC;
@@ -463,13 +600,6 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 	/* Counter */
 	int counter = 0;
 
-	/* Create two linked lists */
-	LinkedList *list1 = new LinkedList();
-	LinkedList *list2 = new LinkedList();
-
-	createList(list1);
-	createList(list2);
-
 	/* Current edge */
 	Edge *currE;
 
@@ -481,9 +611,6 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 	case 0:
 	{ // Constraint volume
 
-		// Set the current node to be l1
-		Node *current = list1->head;
-
 		/*
 				While current is not null
 					- Get the value of some triangle ?
@@ -493,7 +620,8 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 
 		std::vector<int> triangles;
 
-		for (int i = 0; i < v1->ntris; i++){
+		for (int i = 0; i < v1->ntris; i++)
+		{
 			Triangle *t_i = v1->tris[i];
 
 			triangles.push_back(t_i->index);
@@ -508,28 +636,16 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 					- Set current to current->next
 			 */
 
-		for (int i = 0; i < v2->ntris; i++){
-			if(std::find(triangles.begin(), triangles.end(), v2->tris[i]->index) == triangles.end()){
+		for (int i = 0; i < v2->ntris; i++)
+		{
+			if (std::find(triangles.begin(), triangles.end(), v2->tris[i]->index) == triangles.end())
+			{
 				Triangle *t_i = v2->tris[i];
 
 				triangles.push_back(t_i->index);
 				sumTriangle(newC, t, t_i);
 			}
 		}
-
-			while (current != NULL)
-			{
-				if (containsVal(list1, current->value) == 0)
-				{
-					Triangle *t_i = (Triangle *)current->value;
-					current = current->next;
-					sumTriangle(newC, t, t_i);
-				}
-				else
-				{
-					current = current->next;
-				}
-			}
 
 		// For each element in newC, set it to be 1/6 of its value
 		for (int i = 0; i < 3; i++)
@@ -544,7 +660,6 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 
 		n_constraints = addConstraintIfIndep(A_c, b_c, n_constraints, newC, *t);
 
-		std::cout << "n_constraints: " << n_constraints << std::endl;
 		// Set t to 0
 		*t = 0.0;
 	}
@@ -554,21 +669,6 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 		e1->entry[0] = 0.0;
 		e1->entry[1] = 0.0;
 		e1->entry[2] = 0.0;
-
-		// l1 = v1->edge
-		destroyList(list1);
-		createList(list1);
-
-		int v1_i = v1->index;
-		Edge *e1_i = poly->elist[v1_i];
-		addToList(list1, e1_i);
-
-		// l2 = v2->edge
-		destroyList(list2);
-		createList(list2);
-		int v2_i = v2->index;
-		Edge *e2_i = poly->elist[v2_i];
-		addToList(list2, e2_i);
 
 		/*
 				While l2 is not NULL
@@ -584,30 +684,47 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 							- Set e2[i] to e2[i] + cross_product[i]
 					- Set l2 to l2->next
 			 */
-		while (list2->head != NULL)
+
+		for (int i = 0; i < v2->ntris; i++)
 		{
-			if (isBoundaryEdge((Edge *)list2->head->value) && list2->head->value != poly->elist[edge])
+			Triangle *t_i = v2->tris[i];
+			for (int j = 0; j < 3; j++)
 			{
-				counter++;
+				Edge *e = t_i->edges[j];
+				if (isBoundaryEdge(e) && e->index != edge)
+				{
+					counter++;
+					currE = e;
 
-				currE = (Edge *)list2->head->value;
+					e1->entry[0] = currE->verts[0]->x;
+					e1->entry[1] = currE->verts[0]->y;
+					e1->entry[2] = currE->verts[0]->z;
 
-				v1_e1->x = v1->x;
-				v1_e1->y = v1->y;
-				v1_e1->z = v1->z;
+					e2->entry[0] = currE->verts[1]->x;
+					e2->entry[1] = currE->verts[1]->y;
+					e2->entry[2] = currE->verts[1]->z;
 
-				v2_e1->x = v2->x;
-				v2_e1->y = v2->y;
-				v2_e1->z = v2->z;
+					v1_e1->entry[0] = v1->x;
+					v1_e1->entry[1] = v1->y;
+					v1_e1->entry[2] = v1->z;
 
-				e1->operator-=(*v2_e1);
-				e1->operator+=(*v1_e1);
+					v2_e1->entry[0] = v2->x;
+					v2_e1->entry[1] = v2->y;
+					v2_e1->entry[2] = v2->z;
 
-				cp = cross(v2_e1, v1_e1);
+					for (int k = 0; k < 3; k++)
+					{
+						e1->entry[k] += v2_e1->entry[k] - v1_e1->entry[k];
+					}
 
-				e1->operator+=(*cp);
+					cp = cross(v2_e1, v1_e1);
+
+					for (int k = 0; k < 3; k++)
+					{
+						e2->entry[k] += cp->entry[k];
+					}
+				}
 			}
-			list2->head = list2->head->next;
 		}
 
 		/*
@@ -624,30 +741,29 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 							- Set e2[i] to e2[i] + cross_product[i]
 					- Set l1 to l1->next
 			 */
-		while (list1->head != NULL)
+		for (int i = 0; i < v1->ntris; i++)
 		{
-			if (isBoundaryEdge((Edge *)list1->head->value) && list1->head->value != poly->elist[edge])
+			Triangle *t_i = v1->tris[i];
+			for (int j = 0; j < 3; j++)
 			{
-				counter++;
+				Edge *e = t_i->edges[j];
+				if (isBoundaryEdge(e) && e->index != edge)
+				{
+					counter++;
+					currE = e;
 
-				currE = (Edge *)list1->head->value;
+					v1_e1->entry[0] = v1->x;
+					v1_e1->entry[1] = v1->y;
+					v1_e1->entry[2] = v1->z;
 
-				v1_e1->x = v1->x;
-				v1_e1->y = v1->y;
-				v1_e1->z = v1->z;
+					v2_e1->entry[0] = v2->x;
+					v2_e1->entry[1] = v2->y;
+					v2_e1->entry[2] = v2->z;
 
-				v2_e1->x = v2->x;
-				v2_e1->y = v2->y;
-				v2_e1->z = v2->z;
-
-				e2->operator+=(*v2_e1);
-				e2->operator-=(*v1_e1);
-
-				cp = cross(v2_e1, v1_e1);
-
-				e2->operator+=(*cp);
+					e2->operator+=(*v2_e1);
+					e2->operator-=(*v1_e1);
+				}
 			}
-			list1->head = list1->head->next;
 		}
 
 		// If counter > 0
@@ -691,27 +807,6 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 	case 2:
 	{
 		// Volume Optimization
-
-		// Set list1 to be the triangles of the vector v1
-		destroyList(list1);
-		createList(list1);
-
-		for (int i = 0; i < v1->ntris; i++)
-		{
-			addToList(list1, v1->tris[i]);
-		}
-
-		// Set list2 to be the triangles of the vector v2
-		destroyList(list2);
-		createList(list2);
-
-		for (int i = 0; i < v2->ntris; i++)
-		{
-			addToList(list2, v2->tris[i]);
-		}
-
-		// Set current = to list1
-		Node *curr = list1->head;
 
 		// Make a matrix called verts thats 3x3
 		icMatrix3x3 *verts = new icMatrix3x3(0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -762,13 +857,13 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 				- Set H to be a,b,c,d ^2
 		 */
 
-		
+		std::vector<int> triangles;
 
-		while (curr != NULL)
+		for (int i = 0; i < v1->ntris; i++)
 		{
-			t_i = (Triangle *)curr->value;
+			t_i = v1->tris[i];
 
-			curr = curr->next;
+			triangles.push_back(t_i->index);
 
 			icVector3 *v1_t_i = new icVector3(t_i->verts[0]->x, t_i->verts[0]->y, t_i->verts[0]->z);
 			icVector3 *v2_t_i = new icVector3(t_i->verts[1]->x, t_i->verts[1]->y, t_i->verts[1]->z);
@@ -810,6 +905,66 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 			H[3][2] += d * c;
 			H[3][3] += d * d;
 		}
+
+		for (int i = 0; i < v2->ntris; i++)
+		{
+			t_i = v2->tris[i];
+			// If t_i is not in triangles
+			if (std::find(triangles.begin(), triangles.end(), t_i->index) == triangles.end())
+			{
+				icVector3 *v1_t_i = new icVector3(t_i->verts[0]->x, t_i->verts[0]->y, t_i->verts[0]->z);
+				icVector3 *v2_t_i = new icVector3(t_i->verts[1]->x, t_i->verts[1]->y, t_i->verts[1]->z);
+				icVector3 *v3_t_i = new icVector3(t_i->verts[2]->x, t_i->verts[2]->y, t_i->verts[2]->z);
+
+				verts = new icMatrix3x3(v1_t_i, v2_t_i, v3_t_i);
+
+				icVector3 *normal = normalToTriangle(verts);
+
+				a = normal->x;
+				b = normal->y;
+				c = normal->z;
+
+				transposed = &transpose(verts);
+
+				d = -1 * determinant(*transposed);
+
+				firstPoint->x = verts->entry[0][0];
+				firstPoint->y = verts->entry[0][1];
+				firstPoint->z = verts->entry[0][2];
+
+				H[0][0] += a * a;
+				H[0][1] += a * b;
+				H[0][2] += a * c;
+				H[0][3] += a * d;
+
+				H[1][0] += b * a;
+				H[1][1] += b * b;
+				H[1][2] += b * c;
+				H[1][3] += b * d;
+
+				H[2][0] += c * a;
+				H[2][1] += c * b;
+				H[2][2] += c * c;
+				H[2][3] += c * d;
+
+				H[3][0] += d * a;
+				H[3][1] += d * b;
+				H[3][2] += d * c;
+				H[3][3] += d * d;
+			}
+		}
+
+		double mult = 1;
+
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				H[i][j] = H1[i][j] = H[i][j] / 18;
+			}
+		}
+
+		// n_constr = quadraticOpt();
 	}
 
 		return 0;
