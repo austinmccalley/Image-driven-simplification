@@ -1,20 +1,140 @@
-﻿  learnply.cpp
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(94,20): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(355,24): warning C4101: 'matrix': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(671,9): warning C4101: 'a': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(671,15): warning C4101: 'b': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(657,13): warning C4101: 'a1': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(671,21): warning C4101: 'c': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(657,18): warning C4101: 'b1': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1092,9): warning C4101: 'cv': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1195,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1202,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1204,4): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1227,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1228,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1260,26): warning C4305: '=': truncation from 'double' to 'GLfloat'
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1316,16): warning C4018: '<': signed/unsigned mismatch
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1428,16): warning C4018: '<': signed/unsigned mismatch
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1462,16): warning C4018: '<': signed/unsigned mismatch
+﻿  icVector.cpp
+  learnply.cpp
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(94,1): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(208): message : see declaration of 'fopen'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(355,24): warning C4101: 'matrix': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(687,9): warning C4101: 'a': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(687,15): warning C4101: 'b': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(673,13): warning C4101: 'a1': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(687,21): warning C4101: 'c': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(673,18): warning C4101: 'b1': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1108,9): warning C4101: 'cv': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1211,1): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(208): message : see declaration of 'fopen'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1218,1): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(208): message : see declaration of 'fopen'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1220,1): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1197): message : see declaration of 'fscanf'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1243,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1244,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1276,26): warning C4305: '=': truncation from 'double' to 'GLfloat'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1332,16): warning C4018: '<': signed/unsigned mismatch
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1444,16): warning C4018: '<': signed/unsigned mismatch
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\learnply.cpp(1478,16): warning C4018: '<': signed/unsigned mismatch
+  List.cpp
+  ply.cpp
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(175,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(214,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(217,1): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(90): message : see declaration of 'strcat'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(221,1): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(208): message : see declaration of 'fopen'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(207,15): warning C4101: 'elem': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(205,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(350,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(352,16): warning C4101: 'prop': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(476,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(672,31): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(707,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(747,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(750,1): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(90): message : see declaration of 'strcat'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(754,1): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(208): message : see declaration of 'fopen'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1080,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1206,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1321,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1358,1): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(90): message : see declaration of 'strcat'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1360,1): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(90): message : see declaration of 'strcat'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1528,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1427,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1562,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1714,9): warning C4101: 'j': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1714,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(1926,19): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2035,18): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2036,19): warning C4244: '=': conversion from 'double' to 'unsigned int', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2040,18): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2041,19): warning C4244: '=': conversion from 'double' to 'unsigned int', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2117,18): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2118,19): warning C4244: '=': conversion from 'double' to 'unsigned int', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2123,18): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2124,19): warning C4244: '=': conversion from 'double' to 'unsigned int', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2242,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2270,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2339,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2345,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2350,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2328,7): warning C4101: 'count_type': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2327,7): warning C4101: 'prop_type': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2417,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2531,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2557,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2597,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2776,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(2778,16): warning C4101: 'prop': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(3061,7): warning C4101: 'count': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(3060,7): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\ply.cpp(3270,1): warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(536): message : see declaration of 'strdup'
+  polyhedron.cpp
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\polyhedron.cpp(619,19): warning C4018: '<': signed/unsigned mismatch
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\polyhedron.cpp(663,19): warning C4018: '<': signed/unsigned mismatch
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\polyhedron.cpp(667,30): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\polyhedron.cpp(680,19): warning C4018: '<': signed/unsigned mismatch
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\polyhedron.cpp(689,23): warning C4018: '<': signed/unsigned mismatch
+  tmatrix.cpp
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\tmatrix.cpp(165,15): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\tmatrix.cpp(166,15): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\tmatrix.cpp(167,15): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\tmatrix.cpp(168,15): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  trackball.cpp
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(109,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(110,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(111,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(124,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(125,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(126,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(175,13): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(187,19): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(233,23): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(354,28): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(406,65): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(407,65): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(418,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(424,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(437,19): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(438,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(450,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(452,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(455,9): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(478,6): warning C4101: 'i': unreferenced local variable
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(536,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(537,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(538,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(541,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(542,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(543,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(546,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(547,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\trackball.cpp(548,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
 icVector.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
-  learnply.vcxproj -> C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\Debug\learnply.exe
+  learnply.vcxproj -> D:\College-Classes\CS 453 - SciVis\Final\CS453-Final\learnply_tri\learnply\.\Debug\learnply.exe

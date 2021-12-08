@@ -559,6 +559,14 @@ double **MtoD(icMatrix3x3 *A)
 	return res;
 }
 
+void free_double_grid(double** grid, int r)
+{
+	if (grid == NULL) return;
+	for (int i = 0; i < r; i++)
+		free(grid[i]);
+	free(grid);
+}
+
 int quadraticOpt(icMatrix3x3 *A_c, icVector3 *b_c, int n, double **A)
 {
 	double **Q = new double *[3 - n];
@@ -646,9 +654,17 @@ int quadraticOpt(icMatrix3x3 *A_c, icVector3 *b_c, int n, double **A)
 		QA_i->entry[1] = QA[i][1];
 		QA_i->entry[2] = QA[i][2];
 		n = addConstraintIfIndep(A_c, b_c, n, QA_i, Qb->entry[i]);
+		free(QA_i);
 	}
 
-	/* TODO: Free memory */
+	/* Free memory */
+	free_double_grid(Q, 3-n);
+	free(curr);
+	free(A_red);
+	free(b_tmp);
+	free(Qb);
+	free_double_grid(QA, 3-n);
+
 	return n;
 }
 
