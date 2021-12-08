@@ -1,21 +1,20 @@
 ﻿  learnply.cpp
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(92,20): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(353,24): warning C4101: 'matrix': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(454,9): warning C4101: 'a': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(454,15): warning C4101: 'b': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(440,13): warning C4101: 'a1': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(454,21): warning C4101: 'c': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(440,18): warning C4101: 'b1': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(866,9): warning C4101: 'cv': unreferenced local variable
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(969,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(976,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(978,4): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1001,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1002,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1034,26): warning C4305: '=': truncation from 'double' to 'GLfloat'
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1090,16): warning C4018: '<': signed/unsigned mismatch
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1202,16): warning C4018: '<': signed/unsigned mismatch
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1236,16): warning C4018: '<': signed/unsigned mismatch
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(835): warning C4715: 'getAllConstraints': not all control paths return a value
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(94,20): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(355,24): warning C4101: 'matrix': unreferenced local variable
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(671,9): warning C4101: 'a': unreferenced local variable
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(671,15): warning C4101: 'b': unreferenced local variable
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(657,13): warning C4101: 'a1': unreferenced local variable
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(671,21): warning C4101: 'c': unreferenced local variable
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(657,18): warning C4101: 'b1': unreferenced local variable
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1092,9): warning C4101: 'cv': unreferenced local variable
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1195,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1202,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1204,4): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1227,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1228,48): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1260,26): warning C4305: '=': truncation from 'double' to 'GLfloat'
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1316,16): warning C4018: '<': signed/unsigned mismatch
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1428,16): warning C4018: '<': signed/unsigned mismatch
+C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\learnply.cpp(1462,16): warning C4018: '<': signed/unsigned mismatch
 icVector.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
   learnply.vcxproj -> C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\Debug\learnply.exe

@@ -48,6 +48,8 @@ int mouse_mode = -2;	 // -2=no action, -1 = down, 0 = zoom, 1 = rotate x, 2 = ro
 int mouse_button = -1; // -1=no button, 0=left, 1=middle, 2=right
 int last_x, last_y;
 
+int cases[4];
+
 struct jitter_struct
 {
 	double x;
@@ -413,7 +415,7 @@ int addConstraintIfIndep(icMatrix3x3 *A_c, icVector3 *b_c, int n, icVector3 *new
 		A_c->entry[n][i] = newC->entry[i];
 	}
 
-	b_c[n] = b;
+	b_c->entry[n] = b;
 
 	if (checkConstraints(A_c, b_c, n + 1))
 	{
@@ -495,6 +497,68 @@ double *orthogonalVto2V(icVector3 *a, double *b)
 	return d_res;
 }
 
+icVector3 *matvet(double **A, int r, int c, icVector3 *v, int d)
+{
+	if (c != d)
+	{
+		std::cout << "Error: matvet: c and d must be the same size" << std::endl;
+		return NULL;
+	}
+
+	icVector3 *res = new icVector3(0, 0, 0);
+
+	for (int i = 0; i < r; i++)
+	{
+		res->entry[i] = 0;
+		for (int j = 0; j < c; j++)
+		{
+			res->entry[i] += A[i][j];
+			res->entry[i] *= v->entry[j];
+		}
+	}
+
+	return res;
+}
+
+double **matmat(double **A, int r1, int c1, double **B, int r2, int c2)
+{
+	if (c1 != r2)
+	{
+		std::cout << "Error: matmat: c1 and r2 must be the same size" << std::endl;
+		return NULL;
+	}
+
+	double **res = new double *[r1];
+	for (int i = 0; i < r1; i++)
+	{
+		res[i] = new double[c2];
+		for (int j = 0; j < c2; j++)
+		{
+			res[i][j] = 0;
+			for (int k = 0; k < c1; k++)
+			{
+				res[i][j] += A[i][k] * B[k][j];
+			}
+		}
+	}
+
+	return res;
+}
+
+double **MtoD(icMatrix3x3 *A)
+{
+	double **res = new double *[3];
+	for (int i = 0; i < 3; i++)
+	{
+		res[i] = new double[3];
+		for (int j = 0; j < 3; j++)
+		{
+			res[i][j] = A->entry[i][j];
+		}
+	}
+	return res;
+}
+
 int quadraticOpt(icMatrix3x3 *A_c, icVector3 *b_c, int n, double **A)
 {
 	double **Q = new double *[3 - n];
@@ -569,7 +633,23 @@ int quadraticOpt(icMatrix3x3 *A_c, icVector3 *b_c, int n, double **A)
 	b_tmp->entry[1] = A[1][3];
 	b_tmp->entry[2] = A[2][3];
 
+	icVector3* Qb = matvet(Q, 3 - n, 3, b_tmp, 3);
+	double **QA = matmat(Q, 3 - n, 3, MtoD(A_red), 3, 3);
 
+	int n_iters = 3 - n;
+
+
+	for (int i = 0; i < n_iters; i++)
+	{
+		icVector3 *QA_i = new icVector3();
+		QA_i->entry[0] = QA[i][0];
+		QA_i->entry[1] = QA[i][1];
+		QA_i->entry[2] = QA[i][2];
+		n = addConstraintIfIndep(A_c, b_c, n, QA_i, Qb->entry[i]);
+	}
+
+	/* TODO: Free memory */
+	return n;
 }
 
 int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2, int n_constraints, int edge)
@@ -964,11 +1044,20 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 			}
 		}
 
-		// n_constr = quadraticOpt();
+		n_constraints = quadraticOpt(A_c, b_c, n_constraints, H);
+
+		// cases[n]++
+
+		if(n_constraints == 3)
+			break;
+	}
+	case 3: // Boundary Optimization
+	{
+
+	}
 	}
 
-		return 0;
-	}
+	return n_constraints;
 }
 
 void calculateSolutions(int n)
