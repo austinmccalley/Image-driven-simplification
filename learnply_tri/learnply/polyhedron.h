@@ -9,6 +9,7 @@ Eugene Zhang 2005
 #ifndef __LEARNPLY_H__
 #define __LEARNPLY_H__
 
+#include <vector>
 
 #include "ply.h"
 #include "icVector.H"
@@ -48,6 +49,8 @@ public:
 	int ntris;
 	Triangle** tris;
 	double length;
+	double cost;
+	int deleted;
 };
 
 class Triangle {
@@ -59,6 +62,8 @@ public:
 
 	double angle[3];
 	float area;
+
+	int deleted;
 
 	icVector3 normal;
 	void* other_props;
@@ -196,6 +201,8 @@ public:
 	icVector3 center;
 	double radius;
 	double area;
+
+	std::vector<icVector3*> solutions;
 
 	int seed;
 

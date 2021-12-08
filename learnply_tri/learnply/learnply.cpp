@@ -49,6 +49,8 @@ int mouse_button = -1; // -1=no button, 0=left, 1=middle, 2=right
 int last_x, last_y;
 
 int cases[4];
+int edges_simplified = 0;
+int trianglesDeleted = 0;
 
 struct jitter_struct
 {
@@ -520,6 +522,29 @@ icVector3 *matvet(double **A, int r, int c, icVector3 *v, int d)
 	return res;
 }
 
+double *matvet(double **A, int r, int c, double *v, int d)
+{
+	if (c != d)
+	{
+		std::cout << "Error: matvet: c and d must be the same size" << std::endl;
+		return NULL;
+	}
+
+	double *res = new double[d];
+
+	for (int i = 0; i < r; i++)
+	{
+		res[i] = 0;
+		for (int j = 0; j < c; j++)
+		{
+			res[i] += A[i][j];
+			res[i] *= v[j];
+		}
+	}
+
+	return res;
+}
+
 double **matmat(double **A, int r1, int c1, double **B, int r2, int c2)
 {
 	if (c1 != r2)
@@ -633,11 +658,10 @@ int quadraticOpt(icMatrix3x3 *A_c, icVector3 *b_c, int n, double **A)
 	b_tmp->entry[1] = A[1][3];
 	b_tmp->entry[2] = A[2][3];
 
-	icVector3* Qb = matvet(Q, 3 - n, 3, b_tmp, 3);
+	icVector3 *Qb = matvet(Q, 3 - n, 3, b_tmp, 3);
 	double **QA = matmat(Q, 3 - n, 3, MtoD(A_red), 3, 3);
 
 	int n_iters = 3 - n;
-
 
 	for (int i = 0; i < n_iters; i++)
 	{
@@ -652,7 +676,54 @@ int quadraticOpt(icMatrix3x3 *A_c, icVector3 *b_c, int n, double **A)
 	return n;
 }
 
-int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2, int n_constraints, int edge)
+void calculateBoundaryEdge(double **H, icVector3 *e1, icVector3 *e2)
+{
+	/* Define a 4x4 matrix x_e1 */
+	double **x_e1 = new double *[4];
+	for (int i = 0; i < 4; i++)
+	{
+		x_e1[i] = new double[4];
+		for (int j = 0; j < 4; j++)
+		{
+			x_e1[i][j] = 0;
+		}
+	}
+
+	double **e1_x;
+
+	x_e1[0][0] = -e1->entry[2];
+	x_e1[1][0] = e1->entry[2];
+	x_e1[0][2] = e1->entry[1];
+	x_e1[2][0] = -e1->entry[1];
+	x_e1[1][2] = -e1->entry[0];
+	x_e1[2][1] = e1->entry[0];
+
+	e1_x = transpose(x_e1, 3, 3);
+
+	double **p = matmat(x_e1, 3, 3, e1_x, 3, 3);
+
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			H[i][j] += p[i][j];
+
+	icVector3 *cp = cross(e1, e2);
+
+	for (int i = 0; i < 3; i++)
+	{
+		H[i][3] += cp->entry[i];
+
+		/* Free cp */
+
+		H[3][3] = 1 / 2 * dot(e1, e2);
+
+		/* Free x_e1, e1_x, p */
+	}
+	{
+		/* code */
+	}
+}
+
+int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2, int n_constraints, int edge, icVector3 *c1, icVector3 *c2, double k1, double k2)
 {
 	icVector3 *a1, *b1, *newC;
 
@@ -676,6 +747,8 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 
 	icVector3 *v1_e1 = new icVector3();
 	icVector3 *v2_e1 = new icVector3();
+
+	icVector3 *crossP = new icVector3();
 
 	/* Counter */
 	int counter = 0;
@@ -1048,16 +1121,274 @@ int getAllConstraints(icMatrix3x3 *A_c, icVector3 *b_c, double **H1, double **H2
 
 		// cases[n]++
 
-		if(n_constraints == 3)
+		if (n_constraints == 3)
 			break;
 	}
 	case 3: // Boundary Optimization
 	{
+		e1->entry[0] = 0.0;
+		e1->entry[1] = 0.0;
+		e1->entry[2] = 0.0;
 
+		/* Allocate room for a 4x4 double matrix called H */
+		double **H = new double *[4];
+		for (int i = 0; i < 4; i++)
+		{
+			H[i] = new double[4];
+			for (int j = 0; j < 4; j++)
+			{
+				H[i][j] = 0.0;
+			}
+		}
+
+		int isFirst = 1;
+
+		/* Iterate over all the edges corresponding with  */
+		for (int i = 0; i < v2->ntris; i++)
+		{
+			Triangle *t_i = v2->tris[i];
+			for (int j = 0; j < 3; j++)
+			{
+				Edge *e = t_i->edges[j];
+				if (isBoundaryEdge(e) && e->index != edge)
+				{
+					counter++;
+					currE = e;
+
+					v1_e1->entry[0] = v1->x;
+					v1_e1->entry[1] = v1->y;
+					v1_e1->entry[2] = v1->z;
+
+					v2_e1->entry[0] = v2->x;
+					v2_e1->entry[1] = v2->y;
+					v2_e1->entry[2] = v2->z;
+
+					e2->operator+=(*v2_e1);
+					e2->operator-=(*v1_e1);
+
+					crossP = cross(v1_e1, v2_e1);
+
+					e2->entry[0] = crossP->entry[0];
+					e2->entry[1] = crossP->entry[1];
+					e2->entry[2] = crossP->entry[2];
+
+					calculateBoundaryEdge(H, e1, e2);
+				}
+			}
+		}
+
+		/* Iterate over all the edges corresponding with  */
+		for (int i = 0; i < v1->ntris; i++)
+		{
+			Triangle *t_i = v1->tris[i];
+			for (int j = 0; j < 3; j++)
+			{
+				Edge *e = t_i->edges[j];
+				if (isBoundaryEdge(e) && e->index != edge)
+				{
+					counter++;
+					currE = e;
+
+					v1_e1->entry[0] = v1->x;
+					v1_e1->entry[1] = v1->y;
+					v1_e1->entry[2] = v1->z;
+
+					v2_e1->entry[0] = v2->x;
+					v2_e1->entry[1] = v2->y;
+					v2_e1->entry[2] = v2->z;
+
+					e2->operator+=(*v2_e1);
+					e2->operator-=(*v1_e1);
+
+					crossP = cross(v1_e1, v2_e1);
+
+					e2->entry[0] = crossP->entry[0];
+					e2->entry[1] = crossP->entry[1];
+					e2->entry[2] = crossP->entry[2];
+
+					calculateBoundaryEdge(H, e1, e2);
+				}
+			}
+		}
+
+		if (counter > 0)
+		{
+			v1_e1->entry[0] = v1->x;
+			v1_e1->entry[1] = v1->y;
+			v1_e1->entry[2] = v1->z;
+
+			v2_e1->entry[0] = v2->x;
+			v2_e1->entry[1] = v2->y;
+			v2_e1->entry[2] = v2->z;
+
+			e2->operator+=(*v2_e1);
+			e2->operator-=(*v1_e1);
+
+			crossP = cross(v1_e1, v2_e1);
+			e2->entry[0] = crossP->entry[0];
+			e2->entry[1] = crossP->entry[1];
+			e2->entry[2] = crossP->entry[2];
+
+			calculateBoundaryEdge(H, e1, e2);
+			for (int i = 0; i < 4; i++)
+				for (int j = 0; j < 4; j++)
+					H[i][j] = H2[i][j] = H[i][j] / 2;
+			n_constraints = quadraticOpt(A_c, b_c, n_constraints, H);
+			cases[n_constraints]++;
+		}
+
+		if (n_constraints == 3)
+			break;
+	}
+	case 4: // Triangle Shape
+	{
+		Vertex *a1 = new Vertex(0, 0, 0);
+		a1->x = v1->x;
+		a1->y = v1->y;
+		a1->z = v1->z;
+
+		Vertex *b1 = new Vertex(0, 0, 0);
+		b1->x = v2->x;
+		b1->y = v2->y;
+		b1->z = v2->z;
+
+		Edge *currE;
+		Vertex *cv;
+		int firstIter = 1;
+
+		icVector3 *newC = new icVector3();
+		for (int i = 0; i < 3; i++)
+		{
+			newC->entry[i] = 0.0;
+			c1->entry[i] = 0.0;
+			/* TODO: Define c1 */
+		}
+
+		/* Make H a 4x4 matrix of doubles */
+		double **H = new double *[4];
+		for (int i = 0; i < 4; i++)
+		{
+			H[i] = new double[4];
+			for (int j = 0; j < 4; j++)
+				H[i][j] = 0.0;
+		}
+
+		double k = 0;
+
+		/* Look at the current edge of a1 */
+
+		counter = 0;
+		for (int i = 0; i < a1->ntris; i++)
+		{
+			Triangle *t_i = a1->tris[i];
+			for (int j = 0; j < 3; j++)
+			{
+				currE = t_i->edges[j];
+
+				if (edge != currE->index)
+				{
+					if (currE->verts[0]->index == v1->index || currE->verts[1]->index == v2->index)
+					{
+						int newCvIdx = v2->index;
+						cv = poly->vlist[newCvIdx];
+					}
+					else
+					{
+						int newCvIdx = v1->index;
+						cv = poly->vlist[newCvIdx];
+					}
+					counter++;
+					newC->entry[0] -= cv->x;
+					newC->entry[1] -= cv->y;
+					newC->entry[2] -= cv->z;
+					k += dot(newC, newC);
+				}
+			}
+		}
+		firstIter = 0;
+
+		for (int i = 0; i < b1->ntris; i++)
+		{
+			Triangle *t_i = b1->tris[i];
+			for (int j = 0; j < 3; j++)
+			{
+				currE = t_i->edges[j];
+
+				if (edge != currE->index)
+				{
+					if (currE->verts[0]->index == v1->index || currE->verts[1]->index == v2->index)
+					{
+						int newCvIdx = v2->index;
+						cv = poly->vlist[newCvIdx];
+					}
+					else
+					{
+						int newCvIdx = v1->index;
+						cv = poly->vlist[newCvIdx];
+					}
+					counter++;
+					newC->entry[0] -= cv->x;
+					newC->entry[1] -= cv->y;
+					newC->entry[2] -= cv->z;
+					k += dot(newC, newC);
+				}
+			}
+		}
+
+		for (int i = 0; i < 3; i++)
+		{
+			H[i][i] = 2 * counter;
+			H[i][3] = 2 * newC->entry[i];
+		}
+
+		int prev = n_constraints;
+		n_constraints = quadraticOpt(A_c, b_c, n_constraints, H);
+		cases[n_constraints]++;
+		/* TODO: Free H */
+		break;
 	}
 	}
+
+	/* TODO: Free e1, e2, e3, newC, t, v1_e1, v2_e2 */
 
 	return n_constraints;
+}
+
+icVector3 *solveLinearSystem(icMatrix3x3 *A, icVector3 *b)
+{
+	icVector3 *res = new icVector3();
+
+	for (int i = 0; i < 3; i++)
+	{
+		res->entry[i] = 0;
+	}
+
+	double detA = determinant(*A);
+
+	if (fabs(detA) < 0.0001)
+	{
+		return NULL;
+	}
+
+	double currDet = 0;
+	icVector3 col;
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			col.entry[j] = A->entry[j][i];
+			A->entry[j][i] = b->entry[j];
+		}
+		currDet = determinant(*A);
+		res->entry[i] = currDet / detA;
+		for (int j = 0; j < 3; j++)
+		{
+			A->entry[j][i] = col.entry[j];
+		}
+	}
+
+	return res;
 }
 
 void calculateSolutions(int n)
@@ -1085,501 +1416,809 @@ void calculateSolutions(int n)
 		}
 	}
 
-	icVector3 *sol = new icVector3(0.0, 0.0, 0.0);
-	icVector3 *vv1 = new icVector3(0.0, 0.0, 0.0);
-	icVector3 *vv2 = new icVector3(0.0, 0.0, 0.0);
+	double *vv1;
+	double vv2;
+
+	icVector3 *c1 = new icVector3(0.0, 0.0, 0.0);
+	icVector3 *c2 = new icVector3(0.0, 0.0, 0.0);
+
+	int k1 = 0;
+	int k2 = 0;
 
 	double cv;
 
 	icMatrix3x3 *currA = new icMatrix3x3(0.0);
 	icVector3 *currB = new icVector3(0.0, 0.0, 0.0);
 
-	int counter = 0;
+	int n_constr = getAllConstraints(A_c, b_c, fv1_H, fv2_H, 0, n, c1, c2, k1, k2);
+	if (n_constr != 3)
+	{
+		poly->solutions[n]->entry[0] = poly->solutions[n]->entry[1] = poly->solutions[n]->entry[2] = 9999;
+		poly->elist[n]->cost = 99999999999.99;
+	}
 
-	int n_constr = getAllConstraints(A_c, b_c, fv1_H, fv2_H, 0, n);
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			currA->entry[i][j] = A_c->entry[i][j];
+		}
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		currB->entry[i] = b_c->entry[i];
+	}
+
+	icVector3 *sol = solveLinearSystem(currA, currB);
+
+	if (sol == NULL)
+	{
+		poly->solutions[n]->entry[0] = poly->solutions[n]->entry[1] = poly->solutions[n]->entry[2] = 9999;
+		poly->elist[n]->cost = 99999999999.99;
+	}
+	else
+	{
+		poly->solutions[n]->entry[0] = sol->entry[0];
+		poly->solutions[n]->entry[1] = sol->entry[1];
+		poly->solutions[n]->entry[2] = sol->entry[2];
+
+		double *currSol = new double[4];
+		for (int i = 0; i < 3; i++)
+		{
+			currSol[i] = sol->entry[i];
+		}
+
+		currSol[3] = 1;
+
+		vv1 = matvet(fv1_H, 4, 4, currSol, 4);
+		vv2 = dotProduct(vv1, currSol, 4);
+		icVector3 *pointV1 = new icVector3(0.0, 0.0, 0.0);
+		icVector3 *pointV2 = new icVector3(0.0, 0.0, 0.0);
+
+		pointV1->entry[0] = poly->elist[n]->verts[0]->x;
+		pointV1->entry[1] = poly->elist[n]->verts[0]->y;
+		pointV1->entry[2] = poly->elist[n]->verts[0]->z;
+
+		pointV2->entry[0] = poly->elist[n]->verts[1]->x;
+		pointV2->entry[1] = poly->elist[n]->verts[1]->y;
+		pointV2->entry[2] = poly->elist[n]->verts[1]->z;
+
+		double len = distance(*pointV1, *pointV2);
+
+		poly->elist[n]->cost += 1 / 2 * len * len * vv2;
+
+		/* 
+			TODO: Free vv1, currSol, pointV1, pointV2, sol
+		*/
+	}
+
+	/* 
+	TODO:
+		Free currA, currB
+		H1
+		H2
+		c1
+		c2
+		c
+		k1
+		k2
+	 */
 
 	/* Get all contrains given some poly p, our constraints A and b, H1, H2, 0, n */
 }
 
-/******************************************************************************
+void swapEdges(int i, int j)
+{
+	Edge *temp;
+	icVector3 *tmpv;
+	int tmpPos;
+
+	temp = poly->elist[i];
+	poly->elist[i] = poly->elist[j];
+	poly->elist[j] = temp;
+
+	tmpPos = poly->elist[i]->index;
+	poly->elist[i]->index = poly->elist[j]->index;
+	poly->elist[j]->index = tmpPos;
+
+	tmpv = poly->solutions[i];
+	poly->solutions[i] = poly->solutions[j];
+	poly->solutions[j] = tmpv;
+}
+
+void quicksort(int l, int r)
+{
+	if (l >= r)
+		return;
+
+	int i = l;
+	int j = r;
+
+	double pivot = poly->elist[i]->cost;
+
+	for (;;)
+	{
+		while (poly->elist[i]->cost < pivot)
+			i++;
+		while (poly->elist[j]->cost > pivot)
+			j--;
+		if (i >= j)
+			break;
+		// Build out swap edges
+		swapEdges(i, j);
+		i++;
+		j--;
+	}
+
+	quicksort(l, i - 1);
+	quicksort(j + 1, r);
+}
+
+Vertex *getThirdVertex(Triangle *t, Vertex *v1, Vertex *v2)
+{
+	if (t->verts[0] == v1 || t->verts[0] == v2)
+	{
+		if (t->verts[1] == v1 || t->verts[1] == v2)
+		{
+			return t->verts[3];
+		}
+		else
+		{
+			return t->verts[1]
+		}
+	}
+	else
+	{
+		return t->verts[0];
+	}
+}
+
+Edge *getLinkingEdge(Vertex *v1, Vertex *v2)
+{
+	Edge *edge;
+
+	for (int i = 0; i < v1->ntris; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			edge = v1->tris[i]->edges[j];
+
+			for (int k = 0; k < v2->ntris; k++)
+			{
+				for (int l = 0; l < 3; l++)
+				{
+					if (edge == v2->tris[k]->edges[l])
+						return edge;
+				}
+			}
+		}
+	}
+
+	return NULL;
+}
+
+int leftArray(int p)
+{
+	if ((2 * p) > poly->nedges)
+		return -1;
+	else
+		return 2 * (p - 1);
+}
+
+int rightArray(int p)
+{
+	if ((2 * p + 1) > poly->nedges)
+		return -1;
+	else
+		return (2 * p);
+}
+
+void heapify(int i)
+{
+	if (i >= poly->nedges)
+		return;
+
+	int min, newindex;
+	int local = i - 1;
+	int l = leftArray(i);
+	int r = rightArray(i);
+
+	if (l != -1 && poly->elist[local]->cost > poly->elist[l]->cost)
+	{
+		min = l;
+		newindex = 2 * i;
+	}
+	else
+	{
+		min = local;
+	}
+
+	if (r != -1 && poly->elist[r]->cost < poly->elist[min]->cost)
+	{
+		min = r;
+		newindex = 2 * i + 1;
+	}
+
+	if (min != local)
+	{
+		swapEdges(local, min);
+		heapify(newindex);
+	}
+}
+
+int simplification(int n)
+{
+	std::cout << "Simplifying the edges..." << std::endl;
+
+	int start = 0;
+	int deleted;
+
+	int nComputations = 0;
+	int casesIsZero = 0;
+
+	while (n > 0)
+	{
+		if (trianglesDeleted >= (poly->ntris / 100 * (100 - 5.0)))
+		{
+			break;
+		}
+
+		for (int i = 0; i < poly->nedges; i++)
+		{
+			if (poly->elist[i]->cost <= 9999990.99 && poly->elist[i]->deleted == 0)
+			{
+				Vertex *v1 = poly->elist[i]->verts[0];
+				Vertex *v2 = poly->elist[i]->verts[1];
+				if (poly->elist[i]->verts[0] == poly->elist[i]->verts[1])
+				{
+					return 0;
+				}
+
+				std::vector<Triangle *> commonTriangles;
+
+				for (int j = 0; j < v1->ntris; j++)
+				{
+					Triangle *t1 = v1->tris[j];
+					for (int k = 0; k < v2->ntris; k++)
+					{
+						Triangle *t2 = v2->tris[k];
+						if (t1 == t2)
+						{
+							commonTriangles.push_back(t1);
+						}
+					}
+				}
+
+				Triangle *currentT;
+				Vertex *v3;
+				Edge *e2, *e3;
+				Vertex *newV3;
+
+				for (int i = 0; i < commonTriangles.size(); i++)
+				{
+					Triangle *t_i = commonTriangles[i];
+
+					newV3 = getThirdVertex(t_i, v1, v2);
+
+					t_i->deleted = 1;
+
+					e2 = getLinkingEdge(v1, newV3);
+					e3 = getLinkingEdge(v2, newV3);
+
+					v1->tris = NULL;
+					v2->tris = NULL;
+					newV3->tris = NULL;
+
+					trianglesDeleted++;
+
+					e3->deleted = 1;
+					e3->cost = 9999999.99;
+
+					/* Heapify */
+					heapify(e3->index + 1);
+				}
+
+				Edge *currE;
+				for (int i = 0; i < v2->ntris; i++)
+				{
+					Triangle *t_i = v2->tris[i];
+					for (int j = 0; j < 3; j++)
+					{
+						currE = t_i->edges[j];
+
+						if(currE->verts[0] == v2)
+							currE->verts[0] = v1;
+						else if(currE->verts[1] == v2)
+							currE->verts[1] = v1;
+					}
+				}
+			}
+		}
+
+		/******************************************************************************
 Process a keyboard action.  In particular, exit the program when an
 "escape" is pressed in the window.
 ******************************************************************************/
-void keyboard(unsigned char key, int x, int y)
-{
-	int i;
-
-	/* set escape key to exit */
-	switch (key)
-	{
-	case 27:
-		poly->finalize(); // finalize_everything
-		exit(0);
-		break;
-
-	case '0':
-		display_mode = 0;
-		display();
-		break;
-
-	case '1':
-		display_mode = 1;
-		display();
-		break;
-
-	case '2':
-		display_mode = 2;
-		display();
-		break;
-
-	case '3':
-		display_mode = 3;
-		display();
-		break;
-
-	case '4':
-		display_mode = 4;
+		void keyboard(unsigned char key, int x, int y)
 		{
-			for (int i = 0; i < poly->nedges; i++)
-				calculateSolutions(i);
-		}
+			int i;
 
-		display();
-		break;
-
-	case '5':
-		display_mode = 5;
-		display();
-		break;
-
-	case '6':
-		display_mode = 6;
-		display();
-		break;
-
-	case '7':
-		display_mode = 7;
-		display();
-		break;
-
-	case '8':
-		display_mode = 8;
-		display();
-		break;
-
-	case '9':
-		display_mode = 9;
-		display();
-		break;
-
-	case 'x':
-		switch (ACSIZE)
-		{
-		case 1:
-			ACSIZE = 16;
-			break;
-
-		case 16:
-			ACSIZE = 1;
-			break;
-
-		default:
-			ACSIZE = 1;
-			break;
-		}
-		fprintf(stderr, "ACSIZE=%d\n", ACSIZE);
-		display();
-		break;
-
-	case '|':
-		this_file = fopen("rotmat.txt", "w");
-		for (i = 0; i < 4; i++)
-			fprintf(this_file, "%f %f %f %f\n", rotmat[i][0], rotmat[i][1], rotmat[i][2], rotmat[i][3]);
-		fclose(this_file);
-		break;
-
-	case '^':
-		this_file = fopen("rotmat.txt", "r");
-		for (i = 0; i < 4; i++)
-			fscanf(this_file, "%f %f %f %f ", (&rotmat[i][0]), (&rotmat[i][1]), (&rotmat[i][2]), (&rotmat[i][3]));
-		fclose(this_file);
-		display();
-		break;
-	}
-}
-
-void multmatrix(const Matrix m)
-{
-	int i, j, index = 0;
-
-	GLfloat mat[16];
-
-	for (i = 0; i < 4; i++)
-		for (j = 0; j < 4; j++)
-			mat[index++] = m[i][j];
-
-	glMultMatrixf(mat);
-}
-
-void set_view(GLenum mode, Polyhedron *poly)
-{
-	icVector3 up, ray, view;
-	GLfloat light_ambient0[] = {0.3, 0.3, 0.3, 1.0};
-	GLfloat light_diffuse0[] = {0.7, 0.7, 0.7, 1.0};
-	GLfloat light_specular0[] = {0.0, 0.0, 0.0, 1.0};
-	GLfloat light_ambient1[] = {0.0, 0.0, 0.0, 1.0};
-	GLfloat light_diffuse1[] = {0.5, 0.5, 0.5, 1.0};
-	GLfloat light_specular1[] = {0.0, 0.0, 0.0, 1.0};
-	GLfloat light_ambient2[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_diffuse2[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_specular2[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_position[] = {0.0, 0.0, 0.0, 1.0};
-
-	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient0);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse0);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular0);
-	glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient1);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse1);
-	glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular1);
-
-	glMatrixMode(GL_PROJECTION);
-	if (mode == GL_RENDER)
-		glLoadIdentity();
-
-	if (view_mode == 0)
-		glOrtho(-radius_factor, radius_factor, -radius_factor, radius_factor, 0.0, 40.0);
-	else
-		gluPerspective(45.0, 1.0, 0.1, 40.0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	light_position[0] = 5.5;
-	light_position[1] = 0.0;
-	light_position[2] = 0.0;
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	light_position[0] = -0.1;
-	light_position[1] = 0.0;
-	light_position[2] = 0.0;
-	glLightfv(GL_LIGHT2, GL_POSITION, light_position);
-}
-
-void set_scene(GLenum mode, Polyhedron *poly)
-{
-	glTranslatef(0.0, 0.0, -3.0);
-	multmatrix(rotmat);
-
-	glScalef(1.0 / poly->radius, 1.0 / poly->radius, 1.0 / poly->radius);
-	glTranslatef(-poly->center.entry[0], -poly->center.entry[1], -poly->center.entry[2]);
-}
-
-void motion(int x, int y)
-{
-	float r[4];
-	float xsize, ysize, s, t;
-
-	switch (mouse_mode)
-	{
-	case -1:
-
-		xsize = (float)win_width;
-		ysize = (float)win_height;
-
-		s = (2.0 * x - win_width) / win_width;
-		t = (2.0 * (win_height - y) - win_height) / win_height;
-
-		if ((s == s_old) && (t == t_old))
-			return;
-
-		mat_to_quat(rotmat, rvec);
-		trackball(r, s_old, t_old, s, t);
-		add_quats(r, rvec, rvec);
-		quat_to_mat(rvec, rotmat);
-
-		s_old = s;
-		t_old = t;
-
-		display();
-		break;
-	}
-}
-
-int processHits(GLint hits, GLuint buffer[])
-{
-	unsigned int i, j;
-	GLuint names, *ptr;
-	double smallest_depth = 1.0e+20, current_depth;
-	int seed_id = -1;
-	unsigned char need_to_update;
-
-	printf("hits = %d\n", hits);
-	ptr = (GLuint *)buffer;
-	for (i = 0; i < hits; i++)
-	{ /* for each hit  */
-		need_to_update = 0;
-		names = *ptr;
-		ptr++;
-
-		current_depth = (double)*ptr / 0x7fffffff;
-		if (current_depth < smallest_depth)
-		{
-			smallest_depth = current_depth;
-			need_to_update = 1;
-		}
-		ptr++;
-		current_depth = (double)*ptr / 0x7fffffff;
-		if (current_depth < smallest_depth)
-		{
-			smallest_depth = current_depth;
-			need_to_update = 1;
-		}
-		ptr++;
-		for (j = 0; j < names; j++)
-		{ /* for each name */
-			if (need_to_update == 1)
-				seed_id = *ptr - 1;
-			ptr++;
-		}
-	}
-	printf("triangle id = %d\n", seed_id);
-	return seed_id;
-}
-
-void mouse(int button, int state, int x, int y)
-{
-	if (button == GLUT_LEFT_BUTTON || button == GLUT_RIGHT_BUTTON)
-	{
-		switch (mouse_mode)
-		{
-		case -2: // no action
-			if (state == GLUT_DOWN)
+			/* set escape key to exit */
+			switch (key)
 			{
-				float xsize = (float)win_width;
-				float ysize = (float)win_height;
+			case 27:
+				poly->finalize(); // finalize_everything
+				exit(0);
+				break;
 
-				float s = (2.0 * x - win_width) / win_width;
-				float t = (2.0 * (win_height - y) - win_height) / win_height;
+			case '0':
+				display_mode = 0;
+				display();
+				break;
+
+			case '1':
+				display_mode = 1;
+				display();
+				break;
+
+			case '2':
+				display_mode = 2;
+				display();
+				break;
+
+			case '3':
+				display_mode = 3;
+				display();
+				break;
+
+			case '4':
+				display_mode = 4;
+				{
+					for (int i = 0; i < poly->nedges; i++)
+						calculateSolutions(i);
+				}
+
+				quicksort(0, poly->nedges - 1); // Quick sort the edges
+
+				edges_simplified = poly->ntris / 12;
+
+				display();
+				break;
+
+			case '5':
+				display_mode = 5;
+				display();
+				break;
+
+			case '6':
+				display_mode = 6;
+				display();
+				break;
+
+			case '7':
+				display_mode = 7;
+				display();
+				break;
+
+			case '8':
+				display_mode = 8;
+				display();
+				break;
+
+			case '9':
+				display_mode = 9;
+				display();
+				break;
+
+			case 'x':
+				switch (ACSIZE)
+				{
+				case 1:
+					ACSIZE = 16;
+					break;
+
+				case 16:
+					ACSIZE = 1;
+					break;
+
+				default:
+					ACSIZE = 1;
+					break;
+				}
+				fprintf(stderr, "ACSIZE=%d\n", ACSIZE);
+				display();
+				break;
+
+			case '|':
+				this_file = fopen("rotmat.txt", "w");
+				for (i = 0; i < 4; i++)
+					fprintf(this_file, "%f %f %f %f\n", rotmat[i][0], rotmat[i][1], rotmat[i][2], rotmat[i][3]);
+				fclose(this_file);
+				break;
+
+			case '^':
+				this_file = fopen("rotmat.txt", "r");
+				for (i = 0; i < 4; i++)
+					fscanf(this_file, "%f %f %f %f ", (&rotmat[i][0]), (&rotmat[i][1]), (&rotmat[i][2]), (&rotmat[i][3]));
+				fclose(this_file);
+				display();
+				break;
+			}
+		}
+
+		void multmatrix(const Matrix m)
+		{
+			int i, j, index = 0;
+
+			GLfloat mat[16];
+
+			for (i = 0; i < 4; i++)
+				for (j = 0; j < 4; j++)
+					mat[index++] = m[i][j];
+
+			glMultMatrixf(mat);
+		}
+
+		void set_view(GLenum mode, Polyhedron * poly)
+		{
+			icVector3 up, ray, view;
+			GLfloat light_ambient0[] = {0.3, 0.3, 0.3, 1.0};
+			GLfloat light_diffuse0[] = {0.7, 0.7, 0.7, 1.0};
+			GLfloat light_specular0[] = {0.0, 0.0, 0.0, 1.0};
+			GLfloat light_ambient1[] = {0.0, 0.0, 0.0, 1.0};
+			GLfloat light_diffuse1[] = {0.5, 0.5, 0.5, 1.0};
+			GLfloat light_specular1[] = {0.0, 0.0, 0.0, 1.0};
+			GLfloat light_ambient2[] = {1.0, 1.0, 1.0, 1.0};
+			GLfloat light_diffuse2[] = {1.0, 1.0, 1.0, 1.0};
+			GLfloat light_specular2[] = {1.0, 1.0, 1.0, 1.0};
+			GLfloat light_position[] = {0.0, 0.0, 0.0, 1.0};
+
+			glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient0);
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse0);
+			glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular0);
+			glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient1);
+			glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse1);
+			glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular1);
+
+			glMatrixMode(GL_PROJECTION);
+			if (mode == GL_RENDER)
+				glLoadIdentity();
+
+			if (view_mode == 0)
+				glOrtho(-radius_factor, radius_factor, -radius_factor, radius_factor, 0.0, 40.0);
+			else
+				gluPerspective(45.0, 1.0, 0.1, 40.0);
+
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			light_position[0] = 5.5;
+			light_position[1] = 0.0;
+			light_position[2] = 0.0;
+			glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+			light_position[0] = -0.1;
+			light_position[1] = 0.0;
+			light_position[2] = 0.0;
+			glLightfv(GL_LIGHT2, GL_POSITION, light_position);
+		}
+
+		void set_scene(GLenum mode, Polyhedron * poly)
+		{
+			glTranslatef(0.0, 0.0, -3.0);
+			multmatrix(rotmat);
+
+			glScalef(1.0 / poly->radius, 1.0 / poly->radius, 1.0 / poly->radius);
+			glTranslatef(-poly->center.entry[0], -poly->center.entry[1], -poly->center.entry[2]);
+		}
+
+		void motion(int x, int y)
+		{
+			float r[4];
+			float xsize, ysize, s, t;
+
+			switch (mouse_mode)
+			{
+			case -1:
+
+				xsize = (float)win_width;
+				ysize = (float)win_height;
+
+				s = (2.0 * x - win_width) / win_width;
+				t = (2.0 * (win_height - y) - win_height) / win_height;
+
+				if ((s == s_old) && (t == t_old))
+					return;
+
+				mat_to_quat(rotmat, rvec);
+				trackball(r, s_old, t_old, s, t);
+				add_quats(r, rvec, rvec);
+				quat_to_mat(rvec, rotmat);
 
 				s_old = s;
 				t_old = t;
 
-				mouse_mode = -1; // down
-				mouse_button = button;
-				last_x = x;
-				last_y = y;
+				display();
+				break;
 			}
-			break;
-
-		default:
-			if (state == GLUT_UP)
-			{
-				button = -1;
-				mouse_mode = -2;
-			}
-			break;
 		}
-	}
-	else if (button == GLUT_MIDDLE_BUTTON)
-	{
-		if (state == GLUT_DOWN)
-		{ // build up the selection feedback mode
 
-			GLuint selectBuf[win_width];
-			GLint hits;
-			GLint viewport[4];
-
-			glGetIntegerv(GL_VIEWPORT, viewport);
-
-			glSelectBuffer(win_width, selectBuf);
-			(void)glRenderMode(GL_SELECT);
-
-			glInitNames();
-			glPushName(0);
-
-			glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
-			glLoadIdentity();
-			/*  create 5x5 pixel picking region near cursor location */
-			gluPickMatrix((GLdouble)x, (GLdouble)(viewport[3] - y),
-										1.0, 1.0, viewport);
-
-			set_view(GL_SELECT, poly);
-			glPushMatrix();
-			set_scene(GL_SELECT, poly);
-			display_shape(GL_SELECT, poly);
-			glPopMatrix();
-			glFlush();
-
-			hits = glRenderMode(GL_RENDER);
-			poly->seed = processHits(hits, selectBuf);
-			display();
-		}
-	}
-}
-
-void display_object()
-{
-	unsigned int i, j;
-	Polyhedron *the_patch = poly;
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_LIGHT1);
-	for (i = 0; i < poly->ntris; i++)
-	{
-		Triangle *temp_t = poly->tlist[i];
-		glBegin(GL_POLYGON);
-		GLfloat mat_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-
-		glColor3f(1.0, 1.0, 1.0);
-		glNormal3d(temp_t->normal.entry[0], temp_t->normal.entry[1], temp_t->normal.entry[2]);
-		for (j = 0; j < 3; j++)
+		int processHits(GLint hits, GLuint buffer[])
 		{
-			Vertex *temp_v = temp_t->verts[j];
-			glVertex3d(temp_v->x, temp_v->y, temp_v->z);
+			unsigned int i, j;
+			GLuint names, *ptr;
+			double smallest_depth = 1.0e+20, current_depth;
+			int seed_id = -1;
+			unsigned char need_to_update;
+
+			printf("hits = %d\n", hits);
+			ptr = (GLuint *)buffer;
+			for (i = 0; i < hits; i++)
+			{ /* for each hit  */
+				need_to_update = 0;
+				names = *ptr;
+				ptr++;
+
+				current_depth = (double)*ptr / 0x7fffffff;
+				if (current_depth < smallest_depth)
+				{
+					smallest_depth = current_depth;
+					need_to_update = 1;
+				}
+				ptr++;
+				current_depth = (double)*ptr / 0x7fffffff;
+				if (current_depth < smallest_depth)
+				{
+					smallest_depth = current_depth;
+					need_to_update = 1;
+				}
+				ptr++;
+				for (j = 0; j < names; j++)
+				{ /* for each name */
+					if (need_to_update == 1)
+						seed_id = *ptr - 1;
+					ptr++;
+				}
+			}
+			printf("triangle id = %d\n", seed_id);
+			return seed_id;
 		}
-		glEnd();
-	}
-}
 
-void display_shape(GLenum mode, Polyhedron *this_poly)
-{
-	unsigned int i, j;
-	GLfloat mat_diffuse[4];
-
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1., 1.);
-
-	glEnable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_LIGHT1);
-
-	for (i = 0; i < this_poly->ntris; i++)
-	{
-		if (mode == GL_SELECT)
-			glLoadName(i + 1);
-
-		Triangle *temp_t = this_poly->tlist[i];
-
-		switch (display_mode)
+		void mouse(int button, int state, int x, int y)
 		{
-		case 1:
-			if (i == this_poly->seed)
+			if (button == GLUT_LEFT_BUTTON || button == GLUT_RIGHT_BUTTON)
 			{
-				mat_diffuse[0] = 0.0;
-				mat_diffuse[1] = 0.0;
-				mat_diffuse[2] = 1.0;
-				mat_diffuse[3] = 1.0;
-			}
-			else
-			{
-				mat_diffuse[0] = 1.0;
-				mat_diffuse[1] = 1.0;
-				mat_diffuse[2] = 0.0;
-				mat_diffuse[3] = 1.0;
-			}
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-			glBegin(GL_POLYGON);
-			for (j = 0; j < 3; j++)
-			{
+				switch (mouse_mode)
+				{
+				case -2: // no action
+					if (state == GLUT_DOWN)
+					{
+						float xsize = (float)win_width;
+						float ysize = (float)win_height;
 
-				Vertex *temp_v = temp_t->verts[j];
-				glNormal3d(temp_v->normal.entry[0], temp_v->normal.entry[1], temp_v->normal.entry[2]);
-				if (i == this_poly->seed)
-					glColor3f(0.0, 0.0, 1.0);
-				else
-					glColor3f(1.0, 1.0, 0.0);
-				glVertex3d(temp_v->x, temp_v->y, temp_v->z);
-			}
-			glEnd();
-			break;
+						float s = (2.0 * x - win_width) / win_width;
+						float t = (2.0 * (win_height - y) - win_height) / win_height;
 
-		case 2:
-			glBegin(GL_POLYGON);
-			for (j = 0; j < 3; j++)
-			{
-				Vertex *temp_v = temp_t->verts[j];
-				glNormal3d(temp_t->normal.entry[0], temp_t->normal.entry[1], temp_t->normal.entry[2]);
-				glColor3f(1.0, 1.0, 1.0);
-				glVertex3d(temp_v->x, temp_v->y, temp_v->z);
-			}
-			glEnd();
-			break;
+						s_old = s;
+						t_old = t;
 
-		case 3:
-			glBegin(GL_POLYGON);
-			for (j = 0; j < 3; j++)
+						mouse_mode = -1; // down
+						mouse_button = button;
+						last_x = x;
+						last_y = y;
+					}
+					break;
+
+				default:
+					if (state == GLUT_UP)
+					{
+						button = -1;
+						mouse_mode = -2;
+					}
+					break;
+				}
+			}
+			else if (button == GLUT_MIDDLE_BUTTON)
 			{
-				mat_diffuse[0] = 1.0;
-				mat_diffuse[1] = 0.0;
-				mat_diffuse[2] = 0.0;
-				mat_diffuse[3] = 1.0;
+				if (state == GLUT_DOWN)
+				{ // build up the selection feedback mode
+
+					GLuint selectBuf[win_width];
+					GLint hits;
+					GLint viewport[4];
+
+					glGetIntegerv(GL_VIEWPORT, viewport);
+
+					glSelectBuffer(win_width, selectBuf);
+					(void)glRenderMode(GL_SELECT);
+
+					glInitNames();
+					glPushName(0);
+
+					glMatrixMode(GL_PROJECTION);
+					glPushMatrix();
+					glLoadIdentity();
+					/*  create 5x5 pixel picking region near cursor location */
+					gluPickMatrix((GLdouble)x, (GLdouble)(viewport[3] - y),
+												1.0, 1.0, viewport);
+
+					set_view(GL_SELECT, poly);
+					glPushMatrix();
+					set_scene(GL_SELECT, poly);
+					display_shape(GL_SELECT, poly);
+					glPopMatrix();
+					glFlush();
+
+					hits = glRenderMode(GL_RENDER);
+					poly->seed = processHits(hits, selectBuf);
+					display();
+				}
+			}
+		}
+
+		void display_object()
+		{
+			unsigned int i, j;
+			Polyhedron *the_patch = poly;
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glShadeModel(GL_SMOOTH);
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT0);
+			glEnable(GL_LIGHT1);
+			for (i = 0; i < poly->ntris; i++)
+			{
+				Triangle *temp_t = poly->tlist[i];
+				glBegin(GL_POLYGON);
+				GLfloat mat_diffuse[] = {1.0, 1.0, 1.0, 1.0};
 
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 
-				Vertex *temp_v = temp_t->verts[j];
-				glNormal3d(temp_t->normal.entry[0], temp_t->normal.entry[1], temp_t->normal.entry[2]);
-
-				glColor3f(1.0, 0.0, 0.0);
-				glVertex3d(temp_v->x, temp_v->y, temp_v->z);
-			}
-			glEnd();
-			break;
-
-		case 4:
-			glBegin(GL_POLYGON);
-			for (j = 0; j < 3; j++)
-			{
-				Vertex *temp_v = temp_t->verts[j];
-				glNormal3d(temp_t->normal.entry[0], temp_t->normal.entry[1], temp_t->normal.entry[2]);
 				glColor3f(1.0, 1.0, 1.0);
-				glVertex3d(temp_v->x, temp_v->y, temp_v->z);
+				glNormal3d(temp_t->normal.entry[0], temp_t->normal.entry[1], temp_t->normal.entry[2]);
+				for (j = 0; j < 3; j++)
+				{
+					Vertex *temp_v = temp_t->verts[j];
+					glVertex3d(temp_v->x, temp_v->y, temp_v->z);
+				}
+				glEnd();
 			}
-			glEnd();
 		}
-	}
-}
 
-void display(void)
-{
-	GLint viewport[4];
-	int jitter;
-
-	glClearColor(1.0, 1.0, 1.0, 1.0); // background for rendering color coding and lighting
-	glGetIntegerv(GL_VIEWPORT, viewport);
-
-	glClear(GL_ACCUM_BUFFER_BIT);
-	for (jitter = 0; jitter < ACSIZE; jitter++)
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		set_view(GL_RENDER, poly);
-		glPushMatrix();
-		switch (ACSIZE)
+		void display_shape(GLenum mode, Polyhedron * this_poly)
 		{
-		case 1:
-			glTranslatef(ji1[jitter].x * 2.0 / viewport[2], ji1[jitter].y * 2.0 / viewport[3], 0.0);
-			break;
+			unsigned int i, j;
+			GLfloat mat_diffuse[4];
 
-		case 16:
-			glTranslatef(ji16[jitter].x * 2.0 / viewport[2], ji16[jitter].y * 2.0 / viewport[3], 0.0);
-			break;
+			glEnable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffset(1., 1.);
 
-		default:
-			glTranslatef(ji1[jitter].x * 2.0 / viewport[2], ji1[jitter].y * 2.0 / viewport[3], 0.0);
-			break;
+			glEnable(GL_DEPTH_TEST);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glShadeModel(GL_SMOOTH);
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT0);
+			glEnable(GL_LIGHT1);
+
+			for (i = 0; i < this_poly->ntris; i++)
+			{
+				if (mode == GL_SELECT)
+					glLoadName(i + 1);
+
+				Triangle *temp_t = this_poly->tlist[i];
+
+				switch (display_mode)
+				{
+				case 1:
+					if (i == this_poly->seed)
+					{
+						mat_diffuse[0] = 0.0;
+						mat_diffuse[1] = 0.0;
+						mat_diffuse[2] = 1.0;
+						mat_diffuse[3] = 1.0;
+					}
+					else
+					{
+						mat_diffuse[0] = 1.0;
+						mat_diffuse[1] = 1.0;
+						mat_diffuse[2] = 0.0;
+						mat_diffuse[3] = 1.0;
+					}
+					glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+					glBegin(GL_POLYGON);
+					for (j = 0; j < 3; j++)
+					{
+
+						Vertex *temp_v = temp_t->verts[j];
+						glNormal3d(temp_v->normal.entry[0], temp_v->normal.entry[1], temp_v->normal.entry[2]);
+						if (i == this_poly->seed)
+							glColor3f(0.0, 0.0, 1.0);
+						else
+							glColor3f(1.0, 1.0, 0.0);
+						glVertex3d(temp_v->x, temp_v->y, temp_v->z);
+					}
+					glEnd();
+					break;
+
+				case 2:
+					glBegin(GL_POLYGON);
+					for (j = 0; j < 3; j++)
+					{
+						Vertex *temp_v = temp_t->verts[j];
+						glNormal3d(temp_t->normal.entry[0], temp_t->normal.entry[1], temp_t->normal.entry[2]);
+						glColor3f(1.0, 1.0, 1.0);
+						glVertex3d(temp_v->x, temp_v->y, temp_v->z);
+					}
+					glEnd();
+					break;
+
+				case 3:
+					glBegin(GL_POLYGON);
+					for (j = 0; j < 3; j++)
+					{
+						mat_diffuse[0] = 1.0;
+						mat_diffuse[1] = 0.0;
+						mat_diffuse[2] = 0.0;
+						mat_diffuse[3] = 1.0;
+
+						glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+
+						Vertex *temp_v = temp_t->verts[j];
+						glNormal3d(temp_t->normal.entry[0], temp_t->normal.entry[1], temp_t->normal.entry[2]);
+
+						glColor3f(1.0, 0.0, 0.0);
+						glVertex3d(temp_v->x, temp_v->y, temp_v->z);
+					}
+					glEnd();
+					break;
+
+				case 4:
+					glBegin(GL_POLYGON);
+					for (j = 0; j < 3; j++)
+					{
+						Vertex *temp_v = temp_t->verts[j];
+						glNormal3d(temp_t->normal.entry[0], temp_t->normal.entry[1], temp_t->normal.entry[2]);
+						glColor3f(1.0, 1.0, 1.0);
+						glVertex3d(temp_v->x, temp_v->y, temp_v->z);
+					}
+					glEnd();
+				}
+			}
 		}
-		set_scene(GL_RENDER, poly);
-		display_shape(GL_RENDER, poly);
-		glPopMatrix();
-		glAccum(GL_ACCUM, 1.0 / ACSIZE);
-	}
-	glAccum(GL_RETURN, 1.0);
-	glFlush();
-	glutSwapBuffers();
-	glFinish();
-}
+
+		void display(void)
+		{
+			GLint viewport[4];
+			int jitter;
+
+			glClearColor(1.0, 1.0, 1.0, 1.0); // background for rendering color coding and lighting
+			glGetIntegerv(GL_VIEWPORT, viewport);
+
+			glClear(GL_ACCUM_BUFFER_BIT);
+			for (jitter = 0; jitter < ACSIZE; jitter++)
+			{
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				set_view(GL_RENDER, poly);
+				glPushMatrix();
+				switch (ACSIZE)
+				{
+				case 1:
+					glTranslatef(ji1[jitter].x * 2.0 / viewport[2], ji1[jitter].y * 2.0 / viewport[3], 0.0);
+					break;
+
+				case 16:
+					glTranslatef(ji16[jitter].x * 2.0 / viewport[2], ji16[jitter].y * 2.0 / viewport[3], 0.0);
+					break;
+
+				default:
+					glTranslatef(ji1[jitter].x * 2.0 / viewport[2], ji1[jitter].y * 2.0 / viewport[3], 0.0);
+					break;
+				}
+				set_scene(GL_RENDER, poly);
+				display_shape(GL_RENDER, poly);
+				glPopMatrix();
+				glAccum(GL_ACCUM, 1.0 / ACSIZE);
+			}
+			glAccum(GL_RETURN, 1.0);
+			glFlush();
+			glutSwapBuffers();
+			glFinish();
+		}

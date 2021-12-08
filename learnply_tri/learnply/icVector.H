@@ -339,6 +339,7 @@ public:
 
   inline double dot(const icVector3 &a, const icVector3 &b);
   inline icVector3 cross(const icVector3 &a);
+  inline double distance(const icVector3 &a, const icVector3 &b);
   void project(const icVector3 &a);
 
 public:
@@ -625,6 +626,13 @@ inline double dot(const icVector3 &a, const icVector3 &b)
 inline double dot(const icVector3 *a, const icVector3 *b)
 {
   return (a->entry[0] * b->entry[0] + a->entry[1] * b->entry[1] + a->entry[2] * b->entry[2]);
+}
+
+inline double distance(const icVector3 &a, const icVector3 &b)
+{
+  return sqrt((a.entry[0] - b.entry[0]) * (a.entry[0] - b.entry[0]) +
+              (a.entry[1] - b.entry[1]) * (a.entry[1] - b.entry[1]) +
+              (a.entry[2] - b.entry[2]) * (a.entry[2] - b.entry[2]));
 }
 
 inline icVector3 cross(const icVector3 &a, const icVector3 &b)
