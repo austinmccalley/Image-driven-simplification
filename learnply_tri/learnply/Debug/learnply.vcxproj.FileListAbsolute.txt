@@ -1,5 +1,0 @@
-C:\Users\zhange\Desktop\project1\learnply\Debug\learnply.exe
-C:\Users\zhange\Desktop\project1\learnply\Debug\learnply.pdb
-D:\Users\Peter\Desktop\project1\learnply\Debug\learnply.exe
-D:\Users\Peter\Desktop\learnply_tri\learnply\Debug\learnply.exe
-C:\Users\mrmca\code\school\cs453 - final project\learnply_tri\learnply\Debug\learnply.exe
