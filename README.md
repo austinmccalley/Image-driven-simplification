@@ -3,7 +3,7 @@
 
 # Image Driven Simplification
 
-This was the term project for CS453 at Oregon State University which was the implementation of image-driven simplification by Peter Lindstrom and Greg Turk in their paper from 2000.
+This was the term project for CS453 at Oregon State University which was the implementation of image-driven simplification by Peter Lindstrom and Greg Turk from their paper Image-driven simplification. It can be accessed here: <https://dl.acm.org/doi/10.1145/353981.353995>
 
 ## Introduction
 
