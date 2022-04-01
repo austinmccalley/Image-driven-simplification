@@ -36,6 +36,10 @@ As mentioned above, comparing the original model to the simplified model, it can
 
 In conclusion, our goal for the project, to correctly implement and edge collapse algorithm to simplify an image was successful. To determine how many edges to collapse, the cost per each edge is calculated and through applying certain constraints, edges are collapsed in order of lowest cost. The final rendering of the model with simplified and re-constructed edges was not completed, but we hope to be able to apply more concepts from Lindstrom and Turk's paper to be able to fully render a simplified Stanford Bunny model.
 
+## Credit
+
+Also credit to Megan Black for helping with the writing of the report and finding numerous errors in my code. 
+
 ## References
 
 [1] P. Lindstrom and G. Turk, “Image-driven simplification,” vol. 19, no. 3,
